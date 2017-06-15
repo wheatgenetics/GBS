@@ -20,10 +20,11 @@
 import argparse
 import csv
 import sys
-import config
+
 import mysql.connector
 from mysql.connector import errorcode
 
+import config
 
 blank = "%BLANK%"
 bufsize = 1  # Use line buffering, i.e. output every line to the file.
@@ -48,8 +49,9 @@ outputfile = args.output
 print ' '
 print "Connecting to database:", config.DATABASE
 try:
-    cnx = mysql.connector.connect(user=config.USER, password=config.PASSWORD, host=config.HOST, port=config.PORT,
-                                  database=config.DATABASE, buffered=True)
+    cnx = mysql.connector.connect(user=config.USER, password=config.PASSWORD, host=config.HOST, port=config.PORT, database=config.DATABASE, buffered=True)
+#   cnx = mysql.connector.connect(user=local_config.USER, password=local_config.PASSWORD, host=local_config.HOST,
+                                #  database=local_config.DATABASE, buffered=True)
 except mysql.connector.Error as err:
     if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
         print "Something is wrong with your user name or password."

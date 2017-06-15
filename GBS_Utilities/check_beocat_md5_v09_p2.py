@@ -29,15 +29,17 @@
 #
 #
 #
-import config
-import mysql.connector
-from mysql.connector import errorcode
-import subprocess
+import argparse
+import datetime
 import hashlib
 import re
-import datetime
+import subprocess
 import sys
-import argparse
+
+import mysql.connector
+from mysql.connector import errorcode
+
+import config
 
 gbs_md5_data = {}
 gbs_files={}

@@ -17,10 +17,11 @@
 import argparse
 import csv
 import sys
-import config
+
 import mysql.connector
 from mysql.connector import errorcode
 
+import config
 
 #dna_plate_id        = str(sys.argv[1])
 #dna_plate_id        = "%" + dna_plate_id +"%"
@@ -74,8 +75,8 @@ keyfile     = args.output
 print ' '
 print "Connecting to Database..."
 try:
-  cnx = mysql.connector.connect(user=config.USER,password=config.PASSWORD,host=config.HOST,port=config.PORT,database=config.DATABASE,buffered=True)
-  print "Host: ",config.HOST
+  cnx = mysql.connector.connect(user=config.USER, password=config.PASSWORD, host=config.HOST, port=config.PORT, database=config.DATABASE, buffered=True)
+  print "Host: ", config.HOST
 except mysql.connector.Error as err:
   if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
     print "Something is wrong with your user name or password."

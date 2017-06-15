@@ -1,0 +1,5 @@
+USER='mlucas'
+PASSWORD='WheatPhen0me'
+PORT='6306'
+HOST='beocat.cis.ksu.edu'
+DATABASE='wheatgenetics'

@@ -19,20 +19,17 @@
 
 import argparse
 import csv
-import datetime
-import getopt
 import gzip
 import re
 import sys
-import time
 from decimal import *
-import config
+
 import mysql.connector
 from Bio import SeqIO
-from Bio.Seq import Seq
-from Bio.SeqRecord import SeqRecord
 from mysql.connector import errorcode
 
+import config
+import local_config
 
 getcontext().prec = 8
 bufsize = 1
@@ -133,9 +130,8 @@ query = (
 print ("Connecting to Database...")
 
 try:
-    # cnx = mysql.connector.connect(user=config.USER, password=config.PASSWORD, host=config.HOST,database=config.DATABASE)
-    cnx = mysql.connector.connect(user=config.USER, password=config.PASSWORD, host=config.HOST, port=config.PORT,
-                                  database=config.DATABASE)
+    #cnx = mysql.connector.connect(user=local_config.USER, password=local_config.PASSWORD, host=local_config.HOST,database=local_config.DATABASE)
+    cnx = mysql.connector.connect(user=config.USER, password=config.PASSWORD, host=config.HOST, port=config.PORT, database=config.DATABASE)
 except mysql.connector.Error as err:
     if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
         print("Something is wrong with your user name or password")
@@ -148,7 +144,8 @@ else:
 
 # Execute the query
 gbsKey = '%' + str(gbsID) + '%'
-print "Querying database:", config.DATABASE
+print "Querying database:", local_config.DATABASE
+#print "Querying database:", config.DATABASE
 try:
     cursor.execute(query, (gbsKey,))
     if cursor.rowcount != 0:
@@ -209,6 +206,8 @@ for seqrecord in SeqIO.parse(handle, "fastq"):
                     found = True
                     break
             if not found:
+                #DEBUG STATEMENT TO BE REMOVED:
+                #print seqrecord.seq[1:20]
                 invalidBarCodes += 1
         else:
             break
