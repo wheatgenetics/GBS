@@ -2,16 +2,17 @@
 #
 # Program: 	generate_barcode_distribution
 #
-# Version:  0.3 October 13,2015     Added aggregation by sample/well and alert thresholds.
+# Version:  0.4 July 25,2018        Added support for ApeKI barcodes
+#           0.3 October 13,2015     Added aggregation by sample/well and alert thresholds.
 #           0.2 September 1,2015    Changed default number of reads to skip to 1,000,000
 #           0.1 April 23,2015       Initial Version
 #
 #
 # This program will generate a distribution of barcode counts contained in a GBS sequence file
 #
-# INPUTS:   1. A Tassel Key File
-#           2. Path to the sequence files
-#
+# INPUTS:   1. Path to the sequence files
+#           2. Number sequence records to sample
+#           3. Number of sequence records to skip before sampling
 #
 # OUTPUTS:  A report counts of barcodes found in GBS sequence files.
 #
@@ -68,7 +69,10 @@ s_sample_ids = set()
 barcodeInfo = {}
 sampleInfo = {}
 pstIRestrSite = "TGCAG"
-
+apekRestrSite1 = "CAGC"
+apekRestrSite2 = "CTGC"
+#apekRestrSite1 = "GCAG"
+#apekRestrSite2 = "GCTG"
 # Start of main program
 
 # Get command line input.
@@ -84,6 +88,17 @@ args = cmdline.parse_args()
 seqfilepath = args.input
 maxseqreads = args.numreads
 recordstoskip = args.skip
+
+#***************************************************************************
+#restrSite=args.restr
+#if restrSite == 'PSTI':
+#    restCutSite=pstIRestrSite
+#elif restrSite == 'APEK':
+#    restCutSite=apekRestrSite
+#else:
+#    print('Incorrect restriction site selected. Please enter PSTI or APEK')
+#    sys.exit()
+#****************************************************************************
 
 print ''
 print 'Processing GBS File ', seqfilepath
@@ -144,12 +159,22 @@ else:
 
 # Execute the query
 gbsKey = '%' + str(gbsID) + '%'
-print "Querying database:", local_config.DATABASE
-#print "Querying database:", config.DATABASE
+#print "Querying database:", local_config.DATABASE
+print "Querying database:", config.DATABASE
 try:
     cursor.execute(query, (gbsKey,))
     if cursor.rowcount != 0:
         for row in cursor:
+            enzyme=row[enzymeid]
+#******************************************************************
+            if enzyme.startswith('PstI') or enzyme=='APEKI':
+              pass
+            else:
+                print('Invalid restriction enzyme type:' + enzyme)
+                print('Exiting...')
+                sys.exit()
+# ******************************************************************
+
             if row[samplenameid] is not None:
                 barcodeInfo[row[barcodeid]] = (row[samplenameid], row[sampleid], row[tissueid])
             else:
@@ -172,6 +197,10 @@ finally:
 
     print 'Closing database connection...'
     cnx.close()
+
+#***********************************************
+#sys.exit()
+#***********************************************
 
 # Store results of query in dictionary.
 
@@ -197,14 +226,31 @@ for seqrecord in SeqIO.parse(handle, "fastq"):
         if seqrecordcount < maxseqreads:
             found = False
             for barcode in s_barcodes:
-                barcodePsti = barcode + pstIRestrSite
-                if seqrecord.seq.startswith(barcodePsti):
-                    read_count[barcode] += 1
-                    sample = barcodeInfo[barcode][1]
-                    if sample is not None:
-                        sample_read_count[sample] += 1
-                    found = True
-                    break
+# ***********************************************
+                if enzyme.startswith('PstI'):
+                    barcodePsti = barcode + pstIRestrSite
+                    if seqrecord.seq.startswith(barcodePsti):
+                        read_count[barcode] += 1
+                        sample = barcodeInfo[barcode][1]
+                        if sample is not None:
+                            sample_read_count[sample] += 1
+                        found = True
+                        break
+                elif enzyme=='APEKI':
+                    barcodeApeki1 = barcode + apekRestrSite1
+                    barcodeApeki2 = barcode + apekRestrSite2
+                    #print(barcodeApeki1)
+                    #print(barcodeApeki2)
+                    #print(seqrecord.seq)
+                    #print("")
+                    if (seqrecord.seq.startswith(barcodeApeki1) or seqrecord.seq.startswith(barcodeApeki2)):
+                        read_count[barcode] += 1
+                        sample = barcodeInfo[barcode][1]
+                        if sample is not None:
+                            sample_read_count[sample] += 1
+                        found = True
+                        break
+# ***********************************************
             if not found:
                 #DEBUG STATEMENT TO BE REMOVED:
                 #print seqrecord.seq[1:20]

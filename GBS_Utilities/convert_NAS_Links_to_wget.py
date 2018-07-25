@@ -1,5 +1,5 @@
 fname='/Users/mlucas/Desktop/GBS_Links.txt'
-outFile='/Users/mlucas/Desktop/GBSS_wget_commands.txt'
+outFile='/Users/mlucas/Desktop/GBS_wget_commands.txt'
 wgetList=[]
 gbsPart=''
 httpPart=''
