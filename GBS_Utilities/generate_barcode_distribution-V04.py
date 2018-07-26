@@ -30,7 +30,7 @@ from Bio import SeqIO
 from mysql.connector import errorcode
 
 import config
-import local_config
+#import local_config
 
 getcontext().prec = 8
 bufsize = 1
@@ -146,7 +146,7 @@ print ("Connecting to Database...")
 
 try:
     #cnx = mysql.connector.connect(user=local_config.USER, password=local_config.PASSWORD, host=local_config.HOST,database=local_config.DATABASE)
-    cnx = mysql.connector.connect(user=config.USER, password=config.PASSWORD, host=config.HOST, port=config.PORT, database=config.DATABASE)
+    cnx = mysql.connector.connect(user=config.USER, password=config.PASSWORD, host=config.HOST, database=config.DATABASE)
 except mysql.connector.Error as err:
     if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
         print("Something is wrong with your user name or password")
