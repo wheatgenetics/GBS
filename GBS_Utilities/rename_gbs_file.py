@@ -88,8 +88,8 @@ if seqCenter=='KSU':
 
 # SQL Statement to update the gbs record with flowcell and lane data.
 
-gbsFlowcellUpdate=("UPDATE gbs SET flowcell=%s WHERE gbs_id LIKE %s" )
-gbsLaneUpdate=("UPDATE gbs SET lane=%s WHERE gbs_id LIKE %s")
+gbsFlowcellUpdate=("UPDATE gbs SET flowcell=%s WHERE gbs_id LIKE %s and flowcell is NULL" )
+gbsLaneUpdate=("UPDATE gbs SET lane=%s WHERE gbs_id LIKE %s and lane is NULL")
 
 # SQL Query to retrieve the gbs_name and dna_id from the gbs records for use in the file renaming.
 
@@ -127,17 +127,17 @@ gbsFileName=gbsId+'x'+gbsName+dnaPlateString+'_'+flowCell+'_'+'s'+'_'+ str(lane)
 print(gbsFileName)
 
 # Generate the list of files to concatenate into one GBS file
+if seqCenter=='KSU':
+    fileList=[]
+    for file in os.listdir(seqFilePath):
+        if (file.startswith(gbsProject.split('_')[0]) and file.endswith(".gz")):
+            fileList.append(os.path.join(seqFilePath, file))
+    fileList.sort()
 
-fileList=[]
-for file in os.listdir(seqFilePath):
-    if file.endswith(".gz"):
-        fileList.append(os.path.join(seqFilePath, file))
-fileList.sort()
-
-# Concatenate separate files into one GBS File
-with open((os.path.join(seqFilePath,'') + gbsFileName), 'wb') as outfile:
-    for fname in fileList:
-        with open(fname,'rb') as infile:
-            shutil.copyfileobj(infile,outfile)
+    # Concatenate separate files into one GBS File
+    with open((os.path.join(seqFilePath,'') + gbsFileName), 'wb') as outfile:
+        for fname in fileList:
+            with open(fname,'rb') as infile:
+                shutil.copyfileobj(infile,outfile)
 sys.exit()
 
