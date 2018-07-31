@@ -169,7 +169,7 @@ if seqCenter=='KSU':
     filteredRecords=[]
     unfilteredRecords=SeqIO.parse(inputHandle, "fastq")
 
-    shortReadCount=0
+#   shortReadCount=0
 #    for seqrecord in unfilteredRecords:
 #        if len(seqrecord.seq) >=75:
 #            filteredRecords.append(seqrecord)
