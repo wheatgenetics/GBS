@@ -100,8 +100,8 @@ recordstoskip = args.skip
 #    sys.exit()
 #****************************************************************************
 
-print ''
-print 'Processing GBS File ', seqfilepath
+print('')
+print('Processing GBS File ', seqfilepath)
 
 # Extract the GBS ID from the sequence file pathname
 
@@ -110,21 +110,21 @@ gbs_start = k.start()
 gbs_end = gbs_start + 7
 gbsID = seqfilepath[gbs_start:gbs_end]
 
-print 'GBS ID:', gbsID
+print('GBS ID:', gbsID)
 
 outputfile = str(gbsID) + "_barcode_distribution.csv"
 logfile = str(gbsID) + "_barcode_summary.txt"
 samplelogfile = str(gbsID) + "_sample_summary.txt"
 
-print "Output file: ", outputfile
-print "Log file:    ", logfile
-print "Sample file: ", samplelogfile
+print("Output file: ", outputfile)
+print("Log file:    ", logfile)
+print("Sample file: ", samplelogfile)
 
 # Open a new file to contain report ou+tput. File will be re-opened with
 # append access when new data needs to be written to it.
 
 try:
-    with open(outputfile, 'wb') as csvfile:
+    with open(outputfile, 'w') as csvfile:
         header = csv.writer(csvfile)
         header.writerow(['Barcode', 'Read Count', 'Percentage','Sample Name', 'Sample ID','Tissue ID'])
     csvfile.close
@@ -142,11 +142,11 @@ query = (
     "SELECT gbs.flowcell,gbs.lane,barcodes.barcode,dna.sample_name,dna.plate_id,substring(dna.well_A01,1,1),substring(dna.well_A01,2,2),concat(gbs.gbs_id,barcodes.barcode),dna.well_A01,dna.notes,gbs.plexing,gbs.project,gbs.enzyme,dna.sample_id,dna.tissue_id,dna.external_id,dna.dna_person,dna.line_num,gbs.gbs_name,dna.plate_name,dna.well_01A,gbs.gbs_id,barcodes.`set` FROM dna LEFT JOIN gbs ON gbs.dna_id = dna.plate_id INNER JOIN barcodes ON dna.well_A01 = barcodes.well_A01 AND gbs.plexing LIKE barcodes.`set` WHERE gbs.gbs_id LIKE %s ORDER BY gbs.gbs_id, dna.well_01A")
 # Connect to the wheatgenetics database
 
-print ("Connecting to Database...")
+print("Connecting to Database...")
 
 try:
     #cnx = mysql.connector.connect(user=local_config.USER, password=local_config.PASSWORD, host=local_config.HOST,database=local_config.DATABASE)
-    cnx = mysql.connector.connect(user=config.USER, password=config.PASSWORD, host=config.HOST, database=config.DATABASE)
+    cnx = mysql.connector.connect(user=config.USER, password=config.PASSWORD, host=config.HOST, port=config.PORT, database=config.DATABASE)
 except mysql.connector.Error as err:
     if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
         print("Something is wrong with your user name or password")
@@ -160,7 +160,7 @@ else:
 # Execute the query
 gbsKey = '%' + str(gbsID) + '%'
 #print "Querying database:", local_config.DATABASE
-print "Querying database:", config.DATABASE
+print("Querying database:", config.DATABASE)
 try:
     cursor.execute(query, (gbsKey,))
     if cursor.rowcount != 0:
@@ -186,8 +186,8 @@ try:
                 sampleInfo[row[sampleid]] = ('Sample Name Not Defined',row[tissueid])
             #print row[sampleid], sampleInfo[row[sampleid]]
             l_sample_ids.append(row[sampleid])
-except:
-    print 'Unexpected error during database query:', sys.exc_info()[0]
+except Exception as e:
+    print('Unexpected error during database query:', sys.exc_info()[0])
     sys.exit()
 finally:
 
@@ -195,7 +195,7 @@ finally:
 
     cursor.close
 
-    print 'Closing database connection...'
+    print('Closing database connection...')
     cnx.close()
 
 #***********************************************
@@ -263,11 +263,11 @@ for seqrecord in SeqIO.parse(handle, "fastq"):
     totalrecords += 1
 # print 'Reads Processed [%d%%]\r'%totalrecords,
 handle.close()
-print "Writing Distribution File..."
+print("Writing Distribution File...")
 #
 # Write out results to a CSV file
 #
-with open(outputfile, 'ab') as csvfile:
+with open(outputfile, 'a') as csvfile:
     for key, value in sorted(read_count.items(), key=lambda x: x[1]):
         fraction = (float(value) / (seqrecordcount-invalidBarCodes))
         counts = csv.writer(csvfile)
@@ -275,7 +275,7 @@ with open(outputfile, 'ab') as csvfile:
 #
 # Write out summary statistics to a text file.
 #
-print "Writing Barcode Summary Report File..."
+print("Writing Barcode Summary Report File...")
 
 f = open(logfile, 'w')
 line = ('{0:^95s}'.format('Distribution of Valid Bar-Coded Reads' + '\n'))
@@ -313,14 +313,14 @@ f.close()
 #
 # Print out summary statistics as a flag to check any problem reports.
 #
-print
-print "Reads with valid bar codes:   ", str(sum(read_count.values())), "(", (sum(read_count.values()) / float(
-    seqrecordcount)) * 100, "%)"
-print "Reads with invalid bar codes: ", str(invalidBarCodes)
-print "Total reads counted:          ", str(sum(read_count.values()) + invalidBarCodes)
-print
+print()
+print("Reads with valid bar codes:   ", str(sum(read_count.values())), "(", (sum(read_count.values()) / float(
+    seqrecordcount)) * 100, "%)")
+print("Reads with invalid bar codes: ", str(invalidBarCodes))
+print("Total reads counted:          ", str(sum(read_count.values()) + invalidBarCodes))
+print()
 
-print "Writing Sample Summary Report File..."
+print("Writing Sample Summary Report File...")
 
 s = open(samplelogfile, 'w')
 line = ('{0:^95s}'.format('Distribution of Valid Bar-Coded Reads by Sample ID' + '\n'))
@@ -359,6 +359,6 @@ s.write(str(line))
 s.close()
 # Exit the program gracefully
     #
-print ('Processing Completed. Exiting...')
-print ''
+print('Processing Completed. Exiting...')
+print('')
 sys.exit()

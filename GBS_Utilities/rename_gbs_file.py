@@ -24,6 +24,18 @@ import os
 import argparse
 import errno
 import shlex,subprocess,shutil
+from Bio import SeqIO
+import gzip
+import hashlib
+
+#------------------------------------------------------------------------
+def hashfilelist(a_file, blocksize=65536):
+    hasher = hashlib.md5()
+    buf = a_file.read(blocksize)
+    while len(buf) > 0:
+        hasher.update(buf)
+        buf = a_file.read(blocksize)
+    return hasher.hexdigest()
 #------------------------------------------------------------------------
 def open_db_connection(test_config):
 
@@ -123,9 +135,11 @@ commit_and_close_db_connection(cursor, cnx)
 
 dnaPlateString=''.join(plateList)
 
-gbsFileName=gbsId+'x'+gbsName+dnaPlateString+'_'+flowCell+'_'+'s'+'_'+ str(lane) + '_fastq.txt.gz'
+gbsFileName=os.path.join(seqFilePath,'') + gbsId+'x'+gbsName+dnaPlateString+'_'+flowCell+'_'+'s'+'_'+ str(lane) + '_fastq.txt.gz'
 print(gbsFileName)
-
+gbsFilteredFileName=os.path.join(seqFilePath,'') + gbsId+'Fx'+gbsName+dnaPlateString+'_'+flowCell+'_'+'s'+'_'+ str(lane) + '_fastq.txt'
+print(gbsFilteredFileName)
+gbsFilteredGzipFileName=os.path.join(seqFilePath,'') + gbsId+'Fx'+gbsName+dnaPlateString+'_'+flowCell+'_'+'s'+'_'+ str(lane) + '_fastq.txt.gz'
 # Generate the list of files to concatenate into one GBS file
 if seqCenter=='KSU':
     fileList=[]
@@ -135,9 +149,76 @@ if seqCenter=='KSU':
     fileList.sort()
 
     # Concatenate separate files into one GBS File
-    with open((os.path.join(seqFilePath,'') + gbsFileName), 'wb') as outfile:
+    #with open((os.path.join(seqFilePath,'') + gbsFileName), 'wb') as outfile:
+    with open(gbsFileName, 'wb') as outfile:
         for fname in fileList:
             with open(fname,'rb') as infile:
                 shutil.copyfileobj(infile,outfile)
+
+    linecount = 0
+    with gzip.open(gbsFileName, 'rb') as f:
+        for row in f:
+            linecount += 1
+    print("Number of lines in original gzip file: " + gbsFileName + " " + str(linecount))
+
+    # Filter out reads which have a sequence <=75 bp
+    inputHandle = gzip.open(gbsFileName, "rt")
+    #outputHandle= gzip.open(gbsFilteredFileName,"wt")
+    outputHandle=gbsFilteredFileName
+    unfilteredRecords=[]
+    filteredRecords=[]
+    unfilteredRecords=SeqIO.parse(inputHandle, "fastq")
+    shortReadCount=0
+    for seqrecord in unfilteredRecords:
+        if len(seqrecord.seq) >=75:
+            filteredRecords.append(seqrecord)
+        else:
+            shortReadCount+=1
+
+    print("Number of short reads removed: ", str(shortReadCount))
+    print("Number of reads in filtered list = ",len(filteredRecords))
+
+    # Write out the filtered gzip GBS file
+
+    SeqIO.write(sequences=filteredRecords, handle=outputHandle, format="fastq")
+
+ #   with open(gbsFilteredFileName, 'rb') as f_in:
+ #       with gzip.open(gbsFilteredGzipFileName, 'wb') as f_out:
+ #           shutil.copyfileobj(f_in, f_out)
+
+    with open(gbsFilteredFileName, 'rb') as f_in:
+        with gzip.GzipFile(filename='',mode='wb', fileobj=open(gbsFilteredGzipFileName, 'wb'),mtime=0) as f_out:
+            shutil.copyfileobj(f_in, f_out)
+
+    # Calculate the checksum of the gzip GBS file
+
+    md5checksum = hashfilelist(open(gbsFilteredGzipFileName, 'rb'))
+    print("Checksum of filtered gzip file: " + gbsFilteredGzipFileName + " " + md5checksum)
+
+    # Calculate the number of lines in the gzip GBS file
+
+    linecount=0
+    with gzip.open(gbsFilteredGzipFileName, 'rb') as f:
+        for row in f:
+            linecount+=1
+    print ("Number of lines in filtered gzip file: " + gbsFilteredGzipFileName + " " + str(linecount))
+
+    # Update the gbs table with md5 checksum and number of lines for the filtered gzip GBS file
+
+    gbsMd5Update = ("UPDATE gbs SET md5sum=%s WHERE gbs_id LIKE %s and md5sum is NULL")
+    gbsLineCountUpdate = ("UPDATE gbs SET num_lines=%s WHERE gbs_id LIKE %s and num_lines is NULL")
+
+    cursor, cnx = open_db_connection(local_config)
+    try:
+        cursor.execute(gbsMd5Update, (md5checksum, gbsNumber + '%'))
+        cursor.execute(gbsLineCountUpdate, (linecount, gbsNumber + '%',))
+    except Exception as e:
+        print('Unexpected error during database query:' + str(e))
+        print('Exiting...')
+        sys.exit()
+        print('Closing connection to database table: gbs.')
+
+    commit_and_close_db_connection(cursor, cnx)
+
 sys.exit()
 
