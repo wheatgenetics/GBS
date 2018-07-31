@@ -168,15 +168,18 @@ if seqCenter=='KSU':
     unfilteredRecords=[]
     filteredRecords=[]
     unfilteredRecords=SeqIO.parse(inputHandle, "fastq")
-    shortReadCount=0
-    for seqrecord in unfilteredRecords:
-        if len(seqrecord.seq) >=75:
-            filteredRecords.append(seqrecord)
-        else:
-            shortReadCount+=1
 
-    print("Number of short reads removed: ", str(shortReadCount))
-    print("Number of reads in filtered list = ",len(filteredRecords))
+    shortReadCount=0
+#    for seqrecord in unfilteredRecords:
+#        if len(seqrecord.seq) >=75:
+#            filteredRecords.append(seqrecord)
+#        else:
+#            shortReadCount+=1
+    filteredRecords=(record for record in unfilteredRecords if len(record.seq) >=75)
+
+
+#    print("Number of short reads removed: ", str(shortReadCount))
+#    print("Number of reads in filtered list = ",len(filteredRecords))
 
     # Write out the filtered gzip GBS file
 
