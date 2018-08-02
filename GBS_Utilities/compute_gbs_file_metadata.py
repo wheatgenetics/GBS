@@ -1,13 +1,13 @@
 #!/usr/bin/python
 #
-# Program: 	rename_gbs_file
+# Program: 	compute_gbs_file_metadata
 #
-# Version:  0.1 July 27,2018        Initial version
+# Version:  0.1 August 1,2018        Initial version
 #
 #
-# This program will rename raw fastq files received from the sequencing center to the Poland Lab standard GBS file name.
-# Initially, this will support files produced by the KSU Genomics Facility, but will later be extended to cover other
-# sequencing centers
+# This program will calculate the MD5 checksum and number of lines of a GBS fastq.txt.gz. and update the wheatgenetics
+# gbs database table with this information.
+
 #
 # INPUTS:
 #
@@ -81,75 +81,50 @@ def commit_and_close_db_connection(cursor,cnx):
 
 cmdline = argparse.ArgumentParser()
 
-cmdline.add_argument('-p', '--path', help='Path to sequence files from sequencing center')
-cmdline.add_argument('-s', '--seqtype', help='The sequencing center that generated the sequence files', default = 'KSU')
+cmdline.add_argument('-p', '--path', help='Path to GBS sequence file')
 
 args = cmdline.parse_args()
 
-seqFilePath=args.path
-seqCenter=args.seqtype
+gbsFilePath=args.path
 
 #------------------------------------------------------------------------
 
-if seqCenter=='KSU':
-    gbsProject=os.path.basename(os.path.normpath(seqFilePath)) # Get the KSU project name e.g. 1369_HGJ27BGX7
-    gbsNumber='GBS'+ gbsProject.split('_')[0]
-    gbsFlowcell=gbsProject.split('_')[1]
-    gbsLane=0
+# Extract the gbs_id from the sequence file path and filename
 
+gbsFileName=os.path.basename(os.path.normpath(gbsFilePath))
+gbsNumber = gbsFileName.split('x')[0] + '%'
 
-# SQL Statement to update the gbs record with flowcell and lane data.
+# Calculate the checksum of the gzip GBS file
 
-gbsFlowcellUpdate=("UPDATE gbs SET flowcell=%s WHERE gbs_id LIKE %s and flowcell is NULL" )
-gbsLaneUpdate=("UPDATE gbs SET lane=%s WHERE gbs_id LIKE %s and lane is NULL")
+md5checksum = hashfilelist(open(gbsFilePath, 'rb'))
 
-# SQL Query to retrieve the gbs_name and dna_id from the gbs records for use in the file renaming.
+print("Checksum of filtered gzip file: " + gbsFilePath + " " + md5checksum)
 
-gbsQuery=("SELECT gbs_id,gbs_name,dna_id,flowcell,lane from gbs WHERE gbs_id LIKE %s")
+# Calculate the number of lines in the gzip GBS file
 
-# Open database connection
+linecount=0
+
+with gzip.open(gbsFilePath, 'rb') as f:
+    for row in f:
+        linecount+=1
+print ("Number of lines in filtered gzip file: " + gbsFilePath + " " + str(linecount))
+
+# Update the gbs table with md5 checksum and number of lines for the filtered gzip GBS file
+
+gbsMd5Update = ("UPDATE gbs SET md5sum=%s WHERE gbs_id LIKE %s and md5sum is NULL")
+gbsLineCountUpdate = ("UPDATE gbs SET num_lines=%s WHERE gbs_id LIKE %s and num_lines is NULL")
 
 cursor, cnx = open_db_connection(local_config)
 try:
-    cursor.execute(gbsFlowcellUpdate,(gbsFlowcell,gbsNumber+'%'))
-    cursor.execute(gbsLaneUpdate, (gbsLane,gbsNumber + '%',))
-    cursor.execute(gbsQuery, (gbsNumber + '%',))
-    if cursor.rowcount != 0:
-        plateList=[]
-        for row in cursor:
-            gbsId=row[0][0:7]
-            gbsName=row[1]
-            gbsName= ''.join(e for e in gbsName if e.isalnum())
-            dnaPlates=plateList.append(row[2][9:])
-            flowCell=row[3]
-            lane=row[4]
+    cursor.execute(gbsMd5Update, (md5checksum, gbsNumber + '%'))
+    cursor.execute(gbsLineCountUpdate, (linecount, gbsNumber + '%',))
 except Exception as e:
-    print('Unexpected error during database query:'+ str(e))
+    print('Unexpected error during database query:' + str(e))
     print('Exiting...')
     sys.exit()
     print('Closing connection to database table: gbs.')
 
 commit_and_close_db_connection(cursor, cnx)
 
-# Formulate GBS File Name
-
-dnaPlateString=''.join(plateList)
-
-gbsFileName=os.path.join(seqFilePath,'') + gbsId+'x'+gbsName+dnaPlateString+'_'+flowCell+'_'+'s'+'_'+ str(lane) + '_fastq.txt.gz'
-print(gbsFileName)
-
-if seqCenter=='KSU':
-    fileList=[]
-    for file in os.listdir(seqFilePath):
-        if (file.startswith(gbsProject.split('_')[0]) and file.endswith(".gz")):
-            fileList.append(os.path.join(seqFilePath, file))
-    fileList.sort()
-
-    # Concatenate separate files into one GBS File
-    #with open((os.path.join(seqFilePath,'') + gbsFileName), 'wb') as outfile:
-    with open(gbsFileName, 'wb') as outfile:
-        for fname in fileList:
-            with open(fname,'rb') as infile:
-                shutil.copyfileobj(infile,outfile)
 sys.exit()
 
