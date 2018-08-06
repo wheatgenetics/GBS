@@ -50,18 +50,18 @@ outputfile=args.output
 
 # Connect to the wheatgenetics database
 
-print ' '
-print "Connecting to database:", config.DATABASE
+print(' ')
+print("Connecting to database:", config.DATABASE)
 try:
   #cnx = mysql.connector.connect(user=local_config.USER,password=local_config.PASSWORD,host=local_config.HOST,database=local_config.DATABASE,buffered=True)
   cnx = mysql.connector.connect(user=config.USER, password=config.PASSWORD, host=config.HOST, port=config.PORT, database=config.DATABASE, buffered=True)
 except mysql.connector.Error as err:
   if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-    print "Something is wrong with your user name or password."
+    print("Something is wrong with your user name or password.")
   elif err.errno == errorcode.ER_BAD_DB_ERROR:
-    print "Database does not exist."
+    print("Database does not exist.")
   else:
-    print "Unknown Error Code: ",err
+    print("Unknown Error Code: ",err)
 else:
  cursor1 = cnx.cursor(buffered=True)
  cursor2 = cnx.cursor(buffered=True)
@@ -70,7 +70,7 @@ else:
 
 # Execute the query to get dna_id and plexing fields from gbs table
 
-print "Querying database:", config.DATABASE
+print("Querying database:", config.DATABASE)
 try:
     for gbs in gbslibs:
         gbs_id_input = gbs+'%'
@@ -99,12 +99,12 @@ try:
                     report_list.append([gbs_id,gbs_plexing,'Null','Null','Null','Null','Null','Null','Null',0.0])
         else:
             message = ["*** Warning: No data found for", gbs_id_input[0:7]]
-            print ''
-            print '{0:30s} {1:7s}'.format(message[0],message[1])
-            print ''
+            print('')
+            print('{0:30s} {1:7s}'.format(message[0],message[1]))
+            print('')
 
 except:
-    print 'Unexpected error during database query:', sys.exc_info()[0]
+    print('Unexpected error during database query:', sys.exc_info()[0])
     sys.exit()
 
 finally:
@@ -115,38 +115,38 @@ finally:
     cursor2.close
     cursor3.close
     cursor4.close
-    print 'Closing database connection...'
+    print('Closing database connection...')
     cnx.close()
 
 # Generate a CSV file of the report output for GBS-based queries
 
 if report_list !=[]:
     try:
-        print 'Generating GBS CSV Report File:',outputfile
+        print('Generating GBS CSV Report File:',outputfile)
 
-        with open(outputfile,'wb') as csvfile:
+        with open(outputfile,'w') as csvfile:
             header = csv.writer(csvfile)
             header.writerow(['GBS ID','Plexing','Plate ID', 'Sample Name','Plate Name','DNA Sample ID', 'DNA Tissue ID', 'Well A01', 'DNA Quant Sample ID','Quant Value'])
         csvfile.close
 
-        with open(outputfile, 'ab') as csvfile:
+        with open(outputfile, 'a') as csvfile:
             for line_item in report_list:
                 reportline = csv.writer(csvfile)
                 reportline.writerow([line_item[0],line_item[1],line_item[2],line_item[3],line_item[4],line_item[5],line_item[6],line_item[7],line_item[8],line_item[9]])
     except IOError as e:
-        print "I/O error({0}): {1}".format(e.errno, e.strerror)
-    except:
-        print 'Unexpected error during report generation:', sys.exc_info()[0]
+        print("I/O error({0}): {1}".format(e.errno, e.strerror))
+    except Exception as e:
+        print('Unexpected error during report generation:', sys.exc_info()[0])
 
 else:
-    print ''
+    print('')
     message = ["*** Warning: No Data to Report"]
-    print '{0:30s}'.format(message[0])
-    print ''
+    print ('{0:30s}'.format(message[0]))
+    print('')
 
 
 # Exit the program gracefully
 
-print 'Processing Completed. Exiting...'
-print ' '
+print('Processing Completed. Exiting...')
+print(' ')
 sys.exit()

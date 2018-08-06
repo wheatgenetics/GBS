@@ -116,8 +116,8 @@ gbsLineCountUpdate = ("UPDATE gbs SET num_lines=%s WHERE gbs_id LIKE %s and num_
 
 cursor, cnx = open_db_connection(local_config)
 try:
-    cursor.execute(gbsMd5Update, (md5checksum, gbsNumber + '%'))
-    cursor.execute(gbsLineCountUpdate, (linecount, gbsNumber + '%',))
+    cursor.execute(gbsMd5Update, (md5checksum, gbsNumber))
+    cursor.execute(gbsLineCountUpdate, (linecount, gbsNumber))
 except Exception as e:
     print('Unexpected error during database query:' + str(e))
     print('Exiting...')
