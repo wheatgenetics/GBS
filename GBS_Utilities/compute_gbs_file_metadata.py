@@ -92,7 +92,8 @@ gbsFilePath=args.path
 # Extract the gbs_id from the sequence file path and filename
 
 gbsFileName=os.path.basename(os.path.normpath(gbsFilePath))
-gbsNumber = gbsFileName.split('x')[0] + '%'
+filteredGbsNumber = gbsFileName.split('x')[0]
+gbsNumber=gbsFileName.split('x')[0][0:7]
 
 # Calculate the checksum of the gzip GBS file
 
@@ -109,22 +110,42 @@ with gzip.open(gbsFilePath, 'rb') as f:
         linecount+=1
 print ("Number of lines in filtered gzip file: " + gbsFilePath + " " + str(linecount))
 
-# Update the gbs table with md5 checksum and number of lines for the filtered gzip GBS file
+# Update the gbs table with filtered gbs_id, md5 checksum and number of lines for the filtered gzip GBS file
 
+gbsIdQuery = ("Select gbs_id FROM gbs WHERE gbs_id LIKE %s ")
+gbsIdUpdate = ("UPDATE gbs SET gbs_id=%s WHERE gbs_id = %s")
 gbsMd5Update = ("UPDATE gbs SET md5sum=%s WHERE gbs_id LIKE %s and md5sum is NULL")
 gbsLineCountUpdate = ("UPDATE gbs SET num_lines=%s WHERE gbs_id LIKE %s and num_lines is NULL")
+gbsCheckQuery=("Select gbs_id,md5sum,num_lines FROM gbs WHERE gbs_id LIKE %s" )
 
-cursor, cnx = open_db_connection(local_config)
+cursorA, cnxA = open_db_connection(local_config)
+cursorB, cnxB = open_db_connection(local_config)
+
 try:
-    cursor.execute(gbsMd5Update, (md5checksum, gbsNumber))
-    cursor.execute(gbsLineCountUpdate, (linecount, gbsNumber))
+    cursorA.execute(gbsIdQuery, (gbsNumber+'%',))
+    for row in cursorA:
+        plateLetter=row[0][-1]
+        newGbsId=filteredGbsNumber+plateLetter
+        cursorB.execute(gbsIdUpdate, (newGbsId,gbsNumber+plateLetter ))
+    cursorA.execute(gbsMd5Update, (md5checksum, filteredGbsNumber+'%'))
+    cursorA.execute(gbsLineCountUpdate, (linecount, filteredGbsNumber+'%'))
 except Exception as e:
     print('Unexpected error during database query:' + str(e))
     print('Exiting...')
     sys.exit()
     print('Closing connection to database table: gbs.')
 
-commit_and_close_db_connection(cursor, cnx)
+commit_and_close_db_connection(cursorA, cnxA)
+commit_and_close_db_connection(cursorB, cnxB)
+
+# Verify that the gbs table has been updated correctly by returning the updated gbs_id,md5sum and num_lines columns
+
+cursorC, cnxC = open_db_connection(local_config)
+cursorC.execute(gbsCheckQuery, (filteredGbsNumber+'%',))
+for row in cursorC:
+    print("GBS table updates for gbs_id,md5sum and num_lines: ",row)
+commit_and_close_db_connection(cursorC, cnxC)
+
 
 sys.exit()
 
