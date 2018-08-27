@@ -130,7 +130,7 @@ print()
 print ("GBS table values BEFORE update for", gbsNumber,":")
 oldMD5=get_gbs_database_values(gbsNumber)
 
-if oldMD5 != md5checksum and oldMD5 != None:
+if oldMD5 != md5checksum and len(oldMD5)==32 :
     print("MD5 checksum is already populated but does not match computed MD5 value.")
     print("Current MD5 Value :",oldMD5)
     print("Computed MD5 Value:",md5checksum)
@@ -142,7 +142,7 @@ if oldMD5 != md5checksum and oldMD5 != None:
 gbsIdQuery = ("Select gbs_id FROM gbs WHERE gbs_id LIKE %s ")
 gbsIdUpdate = ("UPDATE gbs SET gbs_id=%s WHERE gbs_id = %s")
 gbsMd5Update = ("UPDATE gbs SET md5sum=%s WHERE gbs_id LIKE %s and md5sum is NULL")
-gbsLineCountUpdate = ("UPDATE gbs SET num_lines=%s WHERE gbs_id LIKE %s and num_lines is NULL")
+gbsLineCountUpdate = ("UPDATE gbs SET num_lines=%s WHERE gbs_id LIKE %s and (num_lines is NULL or num_lines=0)")
 
 cursorA, cnxA = open_db_connection(local_config)
 cursorB, cnxB = open_db_connection(local_config)
