@@ -45,8 +45,6 @@ def open_db_connection(test_config):
                                           host=test_config.HOST, port=test_config.PORT,
                                           database=test_config.DATABASE)
 
-            print('Connecting to Database: ' + cnx.database)
-
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
                 print('Something is wrong with your user name or password')
@@ -57,7 +55,8 @@ def open_db_connection(test_config):
             else:
                 print(err)
         else:
-            print('Connected to MySQL database:' + cnx.database)
+            #print('Connected to MySQL database:' + cnx.database)
+            #print()
             cursor = cnx.cursor(buffered=True)
         return cursor,cnx
 
@@ -76,7 +75,18 @@ def commit_and_close_db_connection(cursor,cnx):
             print('Error Code: ' + e)
     return
 #------------------------------------------------------------------------
+def get_gbs_database_values(gbsNumber):
+    gbsCheckQuery = ("Select gbs_id,flowcell,lane,md5sum,num_lines FROM gbs WHERE gbs_id LIKE %s")
+    cursorC, cnxC = open_db_connection(local_config)
+    cursorC.execute(gbsCheckQuery, (gbsNumber + '%',))
+    for row in cursorC:
+        print("GBS ID:", row[0]," Flowcell:", row[1]," Lane:", row[2]," MD5:", row[3],"Line Count:", row[4])
+        md5=row[3]
+    commit_and_close_db_connection(cursorC, cnxC)
+    print()
+    return(md5)
 
+#------------------------------------------------------------------------
 # construct the argument parse and parse the arguments
 
 cmdline = argparse.ArgumentParser()
@@ -84,31 +94,48 @@ cmdline = argparse.ArgumentParser()
 cmdline.add_argument('-p', '--path', help='Path to GBS sequence file')
 
 args = cmdline.parse_args()
-
 gbsFilePath=args.path
+print()
 
 #------------------------------------------------------------------------
 
 # Extract the gbs_id from the sequence file path and filename
 
 gbsFileName=os.path.basename(os.path.normpath(gbsFilePath))
-filteredGbsNumber = gbsFileName.split('x')[0]
 gbsNumber=gbsFileName.split('x')[0][0:7]
+if gbsFileName[0][7:]=="F":
+    filteredFile = True
+    print("Processing filtered GBS file",gbsFilePath)
+else:
+    filteredFile=False
+    print("Processing GBS file",gbsFilePath)
 
 # Calculate the checksum of the gzip GBS file
 
 md5checksum = hashfilelist(open(gbsFilePath, 'rb'))
 
-print("Checksum of filtered gzip file: " + gbsFilePath + " " + md5checksum)
+print()
+print("Checksum of gzip file        : " + gbsFilePath + " = " + md5checksum)
 
 # Calculate the number of lines in the gzip GBS file
 
 linecount=0
-
 with gzip.open(gbsFilePath, 'rb') as f:
     for row in f:
         linecount+=1
-print ("Number of lines in filtered gzip file: " + gbsFilePath + " " + str(linecount))
+print ("Number of lines in gzip file : " + gbsFilePath + " = " + str(linecount))
+print()
+
+# Check gbs record values before attempting updates
+print ("GBS table values BEFORE update for", gbsNumber,":")
+oldMD5=get_gbs_database_values(gbsNumber)
+
+if oldMD5 != md5checksum and oldMD5 != None:
+    print("MD5 checksum is already populated but does not match computed MD5 value.")
+    print("Current MD5 Value :",oldMD5)
+    print("Computed MD5 Value:",md5checksum)
+    print("Exiting...")
+    sys.exit()
 
 # Update the gbs table with filtered gbs_id, md5 checksum and number of lines for the filtered gzip GBS file
 
@@ -116,7 +143,6 @@ gbsIdQuery = ("Select gbs_id FROM gbs WHERE gbs_id LIKE %s ")
 gbsIdUpdate = ("UPDATE gbs SET gbs_id=%s WHERE gbs_id = %s")
 gbsMd5Update = ("UPDATE gbs SET md5sum=%s WHERE gbs_id LIKE %s and md5sum is NULL")
 gbsLineCountUpdate = ("UPDATE gbs SET num_lines=%s WHERE gbs_id LIKE %s and num_lines is NULL")
-gbsCheckQuery=("Select gbs_id,md5sum,num_lines FROM gbs WHERE gbs_id LIKE %s" )
 
 cursorA, cnxA = open_db_connection(local_config)
 cursorB, cnxB = open_db_connection(local_config)
@@ -124,11 +150,16 @@ cursorB, cnxB = open_db_connection(local_config)
 try:
     cursorA.execute(gbsIdQuery, (gbsNumber+'%',))
     for row in cursorA:
-        plateLetter=row[0][-1]
-        newGbsId=filteredGbsNumber+plateLetter
-        cursorB.execute(gbsIdUpdate, (newGbsId,gbsNumber+plateLetter ))
-    cursorA.execute(gbsMd5Update, (md5checksum, filteredGbsNumber+'%'))
-    cursorA.execute(gbsLineCountUpdate, (linecount, filteredGbsNumber+'%'))
+        if filteredFile:
+            filteredGbsNumber = gbsFileName.split('x')[0]
+            plateLetter=row[0][-1]
+            newGbsId=filteredGbsNumber+plateLetter
+            cursorB.execute(gbsIdUpdate, (newGbsId,gbsNumber+plateLetter ))
+            cursorA.execute(gbsMd5Update, (md5checksum, filteredGbsNumber + '%'))
+            cursorA.execute(gbsLineCountUpdate, (linecount, filteredGbsNumber + '%'))
+        else:
+            cursorA.execute(gbsMd5Update, (md5checksum, gbsNumber + '%'))
+            cursorA.execute(gbsLineCountUpdate, (linecount, gbsNumber + '%'))
 except Exception as e:
     print('Unexpected error during database query:' + str(e))
     print('Exiting...')
@@ -139,12 +170,8 @@ commit_and_close_db_connection(cursorA, cnxA)
 commit_and_close_db_connection(cursorB, cnxB)
 
 # Verify that the gbs table has been updated correctly by returning the updated gbs_id,md5sum and num_lines columns
-
-cursorC, cnxC = open_db_connection(local_config)
-cursorC.execute(gbsCheckQuery, (filteredGbsNumber+'%',))
-for row in cursorC:
-    print("GBS table updates for gbs_id,md5sum and num_lines: ",row)
-commit_and_close_db_connection(cursorC, cnxC)
+print ("GBS table values AFTER update for", gbsNumber,":")
+get_gbs_database_values(gbsNumber)
 
 
 sys.exit()
