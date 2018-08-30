@@ -14,6 +14,7 @@
 # OUTPUTS:
 #
 #
+#
 import mysql.connector # For successful installation, need to run pip3 install -U setuptools,pip install -U wheel
 # and then pip3 install mysql-connector-python-rf
 from mysql.connector import errorcode
