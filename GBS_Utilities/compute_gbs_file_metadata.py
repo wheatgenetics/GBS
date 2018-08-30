@@ -79,12 +79,15 @@ def get_gbs_database_values(gbsNumber):
     gbsCheckQuery = ("Select gbs_id,flowcell,lane,md5sum,num_lines FROM gbs WHERE gbs_id LIKE %s")
     cursorC, cnxC = open_db_connection(local_config)
     cursorC.execute(gbsCheckQuery, (gbsNumber + '%',))
+    gbsID=[]
+    md5=[]
     for row in cursorC:
         print("GBS ID:", row[0]," Flowcell:", row[1]," Lane:", row[2]," MD5:", row[3],"Line Count:", row[4])
-        md5=row[3]
+        gbsID.append(row[0])
+        md5.append(row[3])
     commit_and_close_db_connection(cursorC, cnxC)
     print()
-    return(md5)
+    return(gbsID,md5)
 
 #------------------------------------------------------------------------
 # construct the argument parse and parse the arguments
@@ -103,7 +106,8 @@ print()
 
 gbsFileName=os.path.basename(os.path.normpath(gbsFilePath))
 gbsNumber=gbsFileName.split('x')[0][0:7]
-if gbsFileName[0][7:]=="F":
+filterFlag=gbsFileName.split('x')[0][7:]
+if filterFlag=="F":
     filteredFile = True
     print("Processing filtered GBS file",gbsFilePath)
 else:
@@ -128,38 +132,45 @@ print()
 
 # Check gbs record values before attempting updates
 print ("GBS table values BEFORE update for", gbsNumber,":")
-oldMD5=get_gbs_database_values(gbsNumber)
+currentGBS,currentMD5=get_gbs_database_values(gbsNumber)
 
-if oldMD5 != md5checksum and len(oldMD5)==32 :
-    print("MD5 checksum is already populated but does not match computed MD5 value.")
-    print("Current MD5 Value :",oldMD5)
-    print("Computed MD5 Value:",md5checksum)
-    print("Exiting...")
-    sys.exit()
+# Check for valid MD5 value in database that does not match computed MD5 value for the file
+# If found exit, so that problem can be checked.
+for currentDBMD5 in currentMD5:
+    if md5checksum != currentDBMD5 and len(currentDBMD5)==32:
+        print("At least one MD5 checksum column is already populated but does not match computed MD5 value.")
+        print("Current MD5 Value :",c)
+        print("Computed MD5 Value:",md5checksum)
+        print("Exiting...")
+        sys.exit()
 
 # Update the gbs table with filtered gbs_id, md5 checksum and number of lines for the filtered gzip GBS file
 
 gbsIdQuery = ("Select gbs_id FROM gbs WHERE gbs_id LIKE %s ")
 gbsIdUpdate = ("UPDATE gbs SET gbs_id=%s WHERE gbs_id = %s")
-gbsMd5Update = ("UPDATE gbs SET md5sum=%s WHERE gbs_id LIKE %s and md5sum is NULL")
+gbsMd5Update = ("UPDATE gbs SET md5sum=%s WHERE gbs_id LIKE %s")
 gbsLineCountUpdate = ("UPDATE gbs SET num_lines=%s WHERE gbs_id LIKE %s and (num_lines is NULL or num_lines=0)")
 
-cursorA, cnxA = open_db_connection(local_config)
-cursorB, cnxB = open_db_connection(local_config)
+cursorA, cnxA = open_db_connection(local_config) # Cursor for reading database
+cursorB, cnxB = open_db_connection(local_config) # Cursor for writing database
 
 try:
     cursorA.execute(gbsIdQuery, (gbsNumber+'%',))
     for row in cursorA:
+        gbsId=row[0][0:7]
         if filteredFile:
-            filteredGbsNumber = gbsFileName.split('x')[0]
+            #filteredGbsNumber = gbsFileName.split('x')[0]
+            currentGbsNumber=row[0]
             plateLetter=row[0][-1]
-            newGbsId=filteredGbsNumber+plateLetter
-            cursorB.execute(gbsIdUpdate, (newGbsId,gbsNumber+plateLetter ))
-            cursorA.execute(gbsMd5Update, (md5checksum, filteredGbsNumber + '%'))
-            cursorA.execute(gbsLineCountUpdate, (linecount, filteredGbsNumber + '%'))
+            filterLetter='F'
+            newGbsId=gbsId+filterLetter+plateLetter
+            if newGbsId != currentGbsNumber:
+                cursorB.execute(gbsIdUpdate, (newGbsId,gbsNumber+plateLetter ))
+            cursorB.execute(gbsMd5Update, (md5checksum, newGbsId))
+            cursorB.execute(gbsLineCountUpdate, (linecount, newGbsId))
         else:
-            cursorA.execute(gbsMd5Update, (md5checksum, gbsNumber + '%'))
-            cursorA.execute(gbsLineCountUpdate, (linecount, gbsNumber + '%'))
+            cursorB.execute(gbsMd5Update, (md5checksum, gbsNumber + '%'))
+            cursorB.execute(gbsLineCountUpdate, (linecount, gbsNumber + '%'))
 except Exception as e:
     print('Unexpected error during database query:' + str(e))
     print('Exiting...')
