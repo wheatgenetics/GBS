@@ -140,7 +140,7 @@ currentGBS,currentMD5=get_gbs_database_values(gbsNumber)
 for currentDBMD5 in currentMD5:
     if md5checksum != currentDBMD5 and len(currentDBMD5)==32:
         print("At least one MD5 checksum column is already populated but does not match computed MD5 value.")
-        print("Current MD5 Value :",c)
+        print("Current MD5 Value :",currentDBMD5)
         print("Computed MD5 Value:",md5checksum)
         print("Exiting...")
         sys.exit()

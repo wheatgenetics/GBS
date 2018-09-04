@@ -18,7 +18,7 @@ import mysql.connector # For successful installation, need to run pip3 install -
 # and then pip3 install mysql-connector-python-rf
 from mysql.connector import errorcode
 import sys
-import config
+#import config
 import local_config
 import os
 import argparse
@@ -113,6 +113,24 @@ elif seqCenter=='Quebec':
             gbsFileList.append(gbsFile)
     gbsList.sort()
     gbsFileList.sort()
+elif seqCenter=='HA':
+    gbsList = []
+    gbsFileList=[]
+    for file in os.listdir(seqFilePath):
+        if file.endswith(".gz"):
+            gbsNumber=file.split('_')[2]
+            gbsFile=os.path.join(seqFilePath,file)
+            with gzip.open(gbsFile,'rt') as handle:
+                firstRead = next(SeqIO.parse(handle, "fastq"))
+            gbsFlowcell=firstRead.id.split(':')[2]
+            gbsLane=int(firstRead.id.split(':')[3])
+            gbsList.append([gbsNumber,gbsFlowcell,gbsLane])
+            gbsFileList.append(gbsFile)
+else:
+    print('Invalid sequencing center selected:', seqCenter)
+    print('Please specify a sequencing center from the following list: [KSU,Quebec,HA] and try again.')
+    print('Exiting...')
+    sys.exit()
 print(gbsList)
 print(gbsFileList)
 
@@ -176,7 +194,7 @@ for gbs in gbsList:
             for fname in fileList:
                 with open(fname,'rb') as infile:
                     shutil.copyfileobj(infile,outfile)
-    elif seqCenter=='Quebec':
+    elif seqCenter=='Quebec' or seqCenter=='HA':
         with open(gbsFileName, 'wb') as outfile:
             fname=gbsFileList[index]
             with open(fname, 'rb') as infile:
