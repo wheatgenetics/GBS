@@ -82,7 +82,7 @@ def commit_and_close_db_connection(cursor,cnx):
 cmdline = argparse.ArgumentParser()
 
 cmdline.add_argument('-p', '--path', help='Path to sequence files from sequencing center')
-cmdline.add_argument('-s', '--seqtype', help='The sequencing center that generated the sequence files', default = 'KSU')
+cmdline.add_argument('-s', '--seqtype', help='The sequencing center that generated the sequence files (KSU, Quebec or HA)', default = 'KSU')
 
 args = cmdline.parse_args()
 
@@ -131,8 +131,6 @@ else:
     print('Please specify a sequencing center from the following list: [KSU,Quebec,HA] and try again.')
     print('Exiting...')
     sys.exit()
-print(gbsList)
-print(gbsFileList)
 
 index=0
 for gbs in gbsList:
@@ -154,7 +152,9 @@ for gbs in gbsList:
 
     cursor, cnx = open_db_connection(local_config)
     try:
+        print('Updating flowcell in gbs table for ' + gbsNumber + ': ' + gbsFlowcell)
         cursor.execute(gbsFlowcellUpdate,(gbsFlowcell,gbsNumber+'%'))
+        print('Updating lane in gbs table for ' + gbsNumber + ': ' + str(gbsLane))
         cursor.execute(gbsLaneUpdate, (gbsLane,gbsNumber + '%',))
         cursor.execute(gbsQuery, (gbsNumber + '%',))
         if cursor.rowcount != 0:
@@ -179,7 +179,7 @@ for gbs in gbsList:
     dnaPlateString=''.join(plateList)
 
     gbsFileName=os.path.join(seqFilePath,'') + gbsId+'x'+gbsName+dnaPlateString+'_'+flowCell+'_'+'s'+'_'+ str(lane) + '_fastq.txt.gz'
-    print(gbsFileName)
+    print('New File Name for ' + gbsNumber + ': '+ gbsFileName)
 
     if seqCenter=='KSU':
         fileList=[]
