@@ -138,7 +138,7 @@ currentGBS,currentMD5=get_gbs_database_values(gbsNumber)
 # Check for valid MD5 value in database that does not match computed MD5 value for the file
 # If found exit, so that problem can be checked.
 for currentDBMD5 in currentMD5:
-    if md5checksum != currentDBMD5 and len(currentDBMD5)==32:
+    if md5checksum != currentDBMD5 and currentDBMD5!= None:
         print("At least one MD5 checksum column is already populated but does not match computed MD5 value.")
         print("Current MD5 Value :",currentDBMD5)
         print("Computed MD5 Value:",md5checksum)
