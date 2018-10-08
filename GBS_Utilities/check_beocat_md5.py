@@ -63,7 +63,7 @@ def hashfilelist(a_file, blocksize=65536):
 
 cmdline = argparse.ArgumentParser()
 cmdline.add_argument('-d', '--dir', help='Beocat directory path to GBS sequence files',
-                     default='/homes/jpoland/sequence/')
+                     default='/bulk/jpoland/sequence/')
 cmdline.add_argument('-f', '--first', help='first GBS number in range to process e.g. GBS0001', default='GBS0001')
 cmdline.add_argument('-l', '--last', help='last GBS number in range to process, e,g, GBS0609', default='GBSLAST')
 args = cmdline.parse_args()
@@ -115,11 +115,18 @@ for (gbs_id, gbs_name, flowcell, lane, md5sum) in cursor:
     R_suffix = re.search(r'R', gbs_id)
     RA_suffix = re.search(r'RA', gbs_id)
     RB_suffix = re.search(r'RB', gbs_id)
+    FA_suffix = re.search(r'FA', gbs_id)
+    FB_suffix = re.search(r'FB', gbs_id)
+    FC_suffix = re.search(r'FC', gbs_id)
+    FD_suffix = re.search(r'FD', gbs_id)
     F_suffix = re.search(r'F', gbs_id)
 
     if RA_suffix is not None or RB_suffix is not None:
         gbs_key = gbs_id[0:8]
-    elif PE_suffix is not None or L_suffix is not None or R_suffix or F_suffix is not None:
+    elif FA_suffix is not None or FB_suffix is not None or FC_suffix is not None \
+            or FD_suffix is not None or F_suffix is not None:
+        gbs_key = gbs_id[0:8]
+    elif PE_suffix is not None or L_suffix is not None or R_suffix is not None:
         gbs_key = gbs_id
     else:
         gbs_key = gbs_id[0:7]
@@ -136,7 +143,6 @@ cursor.close
 print ("Closing database connection")
 # noinspection PyUnboundLocalVariable
 cnx.close()
-
 
 # Read the files in the shared directory into a list
 
