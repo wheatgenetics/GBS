@@ -2,8 +2,12 @@
 #
 # Program: check_beocat_md5.py
 #
-# Version:  0.9 July 20,2015
-#               Added check for filenames of the form GBSnnnnRA and GBSnnnnRB which were not being handled correctly.
+# Version:
+#           1.0 October 8,2018
+#           Added check for filtered filenames with gbs_id of the form gbsnnnnF
+#
+#           0.9 July 20,2015
+#           Added check for filenames of the form GBSnnnnRA and GBSnnnnRB which were not being handled correctly.
 #
 #           0.8 September 29,2014
 #               Reworked code and added capability to check for deleted GBS files;
@@ -23,7 +27,7 @@
 #
 # COMMAND LINE INPUTS:
 #
-# '-d' or '--dir':      'Beocat directory path to GBS sequence files', default='/homes/jpoland/shared/'
+# '-d' or '--dir':      'Beocat directory path to GBS sequence files', default='/bulk/jpoland/sequence/'
 # '-f' or '--first':    'first GBS number in range to process e.g. GBS0001', default='GBS0001'
 # '-l' or  '--last':    'last GBS number in range to process, e,g, GBS0609', default='GBSLAST'
 #
@@ -35,6 +39,7 @@ import hashlib
 import re
 import subprocess
 import sys
+import os
 
 import mysql.connector
 from mysql.connector import errorcode
@@ -63,7 +68,8 @@ cmdline.add_argument('-f', '--first', help='first GBS number in range to process
 cmdline.add_argument('-l', '--last', help='last GBS number in range to process, e,g, GBS0609', default='GBSLAST')
 args = cmdline.parse_args()
 
-gbs_path = args.dir
+gbs_path = os.path.join(args.dir,'')
+print(gbs_path)
 start = args.first
 end = args.last
 gbs_start = start[3:7]
@@ -109,10 +115,11 @@ for (gbs_id, gbs_name, flowcell, lane, md5sum) in cursor:
     R_suffix = re.search(r'R', gbs_id)
     RA_suffix = re.search(r'RA', gbs_id)
     RB_suffix = re.search(r'RB', gbs_id)
+    F_suffix = re.search(r'F', gbs_id)
 
     if RA_suffix is not None or RB_suffix is not None:
         gbs_key = gbs_id[0:8]
-    elif PE_suffix is not None or L_suffix is not None or R_suffix is not None:
+    elif PE_suffix is not None or L_suffix is not None or R_suffix or F_suffix is not None:
         gbs_key = gbs_id
     else:
         gbs_key = gbs_id[0:7]
