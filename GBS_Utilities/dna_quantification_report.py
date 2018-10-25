@@ -34,6 +34,7 @@ import config
 import texttable as tt
 
 
+
 def generate_txt_report(outputfile,report_list):
 # Generate a CSV file of the report output for GBS-based queries
 
