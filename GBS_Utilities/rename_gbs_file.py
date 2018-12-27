@@ -5,14 +5,18 @@
 # Version:  0.1 July 27,2018        Initial version
 #
 #
-# This program will rename raw fastq files received from the sequencing center to the Poland Lab standard GBS file name.
-# Initially, this will support files produced by the KSU Genomics Facility, but will later be extended to cover other
-# sequencing centers
+# This program will rename raw .fastq files received from a sequencing center to a TASSEL-compliant GBS file name.
+# Currently, this program supports GBS files produced by the KSU Genomics Facility, Genome Quebec and Hudson Alpha.
+# Support for other sequencing centers but will be added as required.
 #
 # INPUTS:
 #
+# -p, --path, Path to sequence files from sequencing center
+# -s, --seqtype, The sequencing center that generated the sequence files (KSU, Quebec or HA), default = KSU
+#
 # OUTPUTS:
 #
+# Copy of the original file with a TASSEL-compliant GBS file name.
 #
 import mysql.connector # For successful installation, need to run pip3 install -U setuptools,pip install -U wheel
 # and then pip3 install mysql-connector-python-rf
@@ -26,16 +30,7 @@ import errno
 import shlex,subprocess,shutil
 from Bio import SeqIO
 import gzip
-import hashlib
 
-#------------------------------------------------------------------------
-def hashfilelist(a_file, blocksize=65536):
-    hasher = hashlib.md5()
-    buf = a_file.read(blocksize)
-    while len(buf) > 0:
-        hasher.update(buf)
-        buf = a_file.read(blocksize)
-    return hasher.hexdigest()
 #------------------------------------------------------------------------
 def open_db_connection(test_config):
 
@@ -90,6 +85,7 @@ seqFilePath=args.path
 seqCenter=args.seqtype
 
 #------------------------------------------------------------------------
+
 gbsList=[]
 if seqCenter=='KSU':
     gbsProject=os.path.basename(os.path.normpath(seqFilePath)) # Get the KSU project name e.g. 1369_HGJ27BGX7
@@ -189,7 +185,7 @@ for gbs in gbsList:
         fileList.sort()
 
         # Concatenate separate files into one GBS File
-        #with open((os.path.join(seqFilePath,'') + gbsFileName), 'wb') as outfile:
+
         with open(gbsFileName, 'wb') as outfile:
             for fname in fileList:
                 with open(fname,'rb') as infile:
