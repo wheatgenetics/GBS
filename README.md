@@ -33,11 +33,11 @@ Support for other sequencing centers but will be added as required.
  Copy of the original file with a TASSEL-compliant GBS file name.
 
 
-#filter_FASTQ_byLength_outgz.pl
+# filter_FASTQ_byLength_outgz.pl
 
-#compute_gbs_file_metadata.py
+# compute_gbs_file_metadata.py
 
-#generate_barcode_distribution-V04.py
+# generate_barcode_distribution-V04.py
 
-#dna_quantification_report.py
+# dna_quantification_report.py
 
