@@ -1,8 +1,5 @@
 GBS
 ===
-
-Tools for GBS Data Management
-
 The programs in the GBS_Utilities folder are used for GBS Sequence Data Management.
 
 GBS Sequence Data Management consists of the following tasks:
@@ -19,27 +16,27 @@ GBS Sequence Data Management consists of the following tasks:
 
 Python programs that support these tasks are listed below.
 
-# rename_gbs_file.py
+#rename_gbs_file.py
 
-# This program will rename raw .fastq files received from a sequencing center to a TASSEL-compliant GBS file name.
-# Currently, this program supports GBS files produced by the KSU Genomics Facility, Genome Quebec and Hudson Alpha.
-# Support for other sequencing centers but will be added as required.
-#
-# INPUTS:
-# 
-# -p, --path, Path to sequence files from sequencing center
-# -s, --seqtype, The sequencing center that generated the sequence files (KSU, Quebec or HA), default = KSU
-#
-# OUTPUTS:
-#
-# Copy of the original file with a TASSEL-compliant GBS file name.
-#
+This program will rename raw .fastq files received from a sequencing center to a TASSEL-compliant GBS file name.
+Currently, this program supports GBS files produced by the KSU Genomics Facility, Genome Quebec and Hudson Alpha.
+Support for other sequencing centers but will be added as required.
 
-filter_FASTQ_byLength_outgz.pl
+ INPUT Parameters:
+ 
+ -p, --path, Path to sequence files from sequencing center
+ -s, --seqtype, The sequencing center that generated the sequence files (KSU, Quebec or HA), default = KSU
 
-compute_gbs_file_metadata.py
+ OUTPUTS:
 
-generate_barcode_distribution-V04.py
+ Copy of the original file with a TASSEL-compliant GBS file name.
 
-dna_quantification_report.py
+
+#filter_FASTQ_byLength_outgz.pl
+
+#compute_gbs_file_metadata.py
+
+#generate_barcode_distribution-V04.py
+
+#dna_quantification_report.py
 
