@@ -16,7 +16,7 @@ GBS Sequence Data Management consists of the following tasks:
 
 Python programs that support these tasks are listed below.
 
-#rename_gbs_file.py
+# rename_gbs_file.py
 
 This program will rename raw .fastq files received from a sequencing center to a TASSEL-compliant GBS file name.
 Currently, this program supports GBS files produced by the KSU Genomics Facility, Genome Quebec and Hudson Alpha.
