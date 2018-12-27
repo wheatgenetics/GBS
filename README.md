@@ -22,13 +22,13 @@ This program will rename raw .fastq files received from a sequencing center to a
 Currently, this program supports GBS files produced by the KSU Genomics Facility, Genome Quebec and Hudson Alpha.
 Support for other sequencing centers but will be added as required.
 
- INPUT Parameters:
+ **INPUT Parameters:**
  
  -p, --path, Path to sequence files from sequencing center
  
  -s, --seqtype, The sequencing center that generated the sequence files (KSU, Quebec or HA), default = KSU
 
- OUTPUTS:
+ **OUTPUTS:**
 
  Copy of the original file with a TASSEL-compliant GBS file name.
 
