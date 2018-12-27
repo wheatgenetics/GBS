@@ -25,6 +25,7 @@ Support for other sequencing centers but will be added as required.
  INPUT Parameters:
  
  -p, --path, Path to sequence files from sequencing center
+ 
  -s, --seqtype, The sequencing center that generated the sequence files (KSU, Quebec or HA), default = KSU
 
  OUTPUTS:
