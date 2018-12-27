@@ -1,4 +1,19 @@
 #!/usr/bin/perl
+#
+# This program will read a fastq file and write a new fastq file which does not contain reads of length less than
+# a specified minimum length.
+#
+# It was written in PERL because it can read/write .gz files directly without separate decompress/compress steps.
+#
+# INPUT parameters:
+#
+# Minimum read length e.g. 75
+# Input file name
+#
+# OUTPUT:
+#
+# Filtered output file containing reads of length greater than or equal to the specified minimum read length.
+#
 use warnings;
 use strict;
 use v5.14;

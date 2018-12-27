@@ -18,6 +18,12 @@
 #
 # Copy of the original file with a TASSEL-compliant GBS file name.
 #
+# The following wheatgenetics database column values will be updated
+#
+# flowcell - The flowcell that the associated GBS library was sequenced on.
+# lane - The lane that the associated GBS library was sequenced on.
+#
+#
 import mysql.connector # For successful installation, need to run pip3 install -U setuptools,pip install -U wheel
 # and then pip3 install mysql-connector-python-rf
 from mysql.connector import errorcode

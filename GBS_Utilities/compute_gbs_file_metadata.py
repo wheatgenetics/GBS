@@ -11,7 +11,15 @@
 #
 # INPUTS:
 #
+#  -p, --path, Path to GBS sequence file
+#
 # OUTPUTS:
+#
+# The following wheatgenetics database column values will be updated
+#
+# gbs_id - The GBS ID e.g. GBS1320.
+# md5sum - The MD5 checksum of the GBS sequence file.
+# numlines - The number of lines in the GBS sequence file.
 #
 #
 #

@@ -10,11 +10,17 @@
 #
 # This program will generate a distribution of barcode counts contained in a GBS sequence file
 #
-# INPUTS:   1. Path to the sequence files
-#           2. Number sequence records to sample
-#           3. Number of sequence records to skip before sampling
+# INPUTS:
 #
-# OUTPUTS:  A report counts of barcodes found in GBS sequence files.
+# -i, --input, full path to GBS file to process
+# -n, --numreads, number of fastq reads to process, type=int, default=100000
+# -s, --skip, number of fastq reads to skip from beginning of file, type=int, default=1000000
+#
+#
+# OUTPUTS:
+#
+# A report with counts of barcodes found in GBS sequence files.
+# A report with counts of barcodes associated with each well in a GBS library
 #
 #
 

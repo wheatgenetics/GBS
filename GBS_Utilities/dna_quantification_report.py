@@ -11,15 +11,20 @@
 #
 # This program will generate a report of the quantity of DNA measured for all wells on plates
 # associated with one or more GBS libraries identified by GBS ID.
+# GBS ID string has the format e.g. GBS0001, GBS0001R1, GBS0001L1, GBS0001PE.
 #
 # Based on blank_dna_quant_report.py
 #
-# INPUTS:   GBS ID string e.g. GBS0001, GBS0001R1, GBS0001L1, GBS0001PE.
-#           NOTE: a blank input string will generate report for all GBS libraries in
-#           the wheatgenetics database.
+# INPUTS:
 #
-# OUTPUTS:  A csv report file listing quant_val measurement for blank wells in DNA plates
-#           associated with the GBS library input.
+# -g,--gbs,comma separated list of GBS IDs,default=''
+#
+# NOTE: a blank input string will generate report for all GBS libraries in the wheatgenetics database.
+#
+# OUTPUTS:
+#
+# A csv report file listing quant_val and flor_val measurements for all wells in DNA plates associated with the
+# GBS libraries in the input string.
 #
 #
 import argparse
