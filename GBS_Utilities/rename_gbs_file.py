@@ -90,9 +90,14 @@ args = cmdline.parse_args()
 seqFilePath=args.path
 seqCenter=args.seqtype
 
+if not os.path.exists(seqFilePath):
+    print("Path to folder: " + seqFilePath + " not found. Exiting...")
+    sys.exit()
+
 #------------------------------------------------------------------------
 
 gbsList=[]
+paired=False
 if seqCenter=='KSU':
     gbsProject=os.path.basename(os.path.normpath(seqFilePath)) # Get the KSU project name e.g. 1369_HGJ27BGX7
     gbsNumber='GBS'+ gbsProject.split('_')[0]
@@ -128,6 +133,22 @@ elif seqCenter=='HA':
             gbsLane=int(firstRead.id.split(':')[3])
             gbsList.append([gbsNumber,gbsFlowcell,gbsLane])
             gbsFileList.append(gbsFile)
+elif seqCenter=='novogene':
+    gbsList = []
+    gbsFileList=[]
+    for file in os.listdir(seqFilePath):
+        if file.endswith(".gz"):
+            paired=True
+            params=gbsNumber=file.split('_')
+            pEnd = params[4][0]
+            gbsNumber=params[0]
+            gbsFile=os.path.join(seqFilePath,file)
+            with gzip.open(gbsFile,'rt') as handle:
+                firstRead = next(SeqIO.parse(handle, "fastq"))
+            gbsFlowcell=firstRead.id.split(':')[2]
+            gbsLane=int(firstRead.id.split(':')[3])
+            gbsList.append([gbsNumber,gbsFlowcell,gbsLane,pEnd])
+            gbsFileList.append(gbsFile)
 else:
     print('Invalid sequencing center selected:', seqCenter)
     print('Please specify a sequencing center from the following list: [KSU,Quebec,HA] and try again.')
@@ -140,6 +161,8 @@ for gbs in gbsList:
     gbsNumber=gbs[0]
     gbsFlowcell=gbs[1]
     gbsLane=gbs[2]
+    if paired:
+        pEnd=gbs[3]
 
     # SQL Statement to update the gbs record with flowcell and lane data.
 
@@ -154,10 +177,6 @@ for gbs in gbsList:
 
     cursor, cnx = open_db_connection(local_config)
     try:
-        print('Updating flowcell in gbs table for ' + gbsNumber + ': ' + gbsFlowcell)
-        cursor.execute(gbsFlowcellUpdate,(gbsFlowcell,gbsNumber+'%'))
-        print('Updating lane in gbs table for ' + gbsNumber + ': ' + str(gbsLane))
-        cursor.execute(gbsLaneUpdate, (gbsLane,gbsNumber + '%',))
         cursor.execute(gbsQuery, (gbsNumber + '%',))
         if cursor.rowcount != 0:
             plateList=[]
@@ -168,6 +187,13 @@ for gbs in gbsList:
                 dnaPlates=plateList.append(row[2][9:])
                 flowCell=row[3]
                 lane=row[4]
+        else:
+            print("*** GBS ID: " + gbsNumber + " not found in database. Exiting... ***")
+            sys.exit()
+        print('Updating flowcell in gbs table for ' + gbsNumber + ': ' + gbsFlowcell)
+        cursor.execute(gbsFlowcellUpdate,(gbsFlowcell,gbsNumber+'%'))
+        print('Updating lane in gbs table for ' + gbsNumber + ': ' + str(gbsLane))
+        cursor.execute(gbsLaneUpdate, (gbsLane,gbsNumber + '%',))
     except Exception as e:
         print('Unexpected error during database query:'+ str(e))
         print('Exiting...')
@@ -179,8 +205,10 @@ for gbs in gbsList:
     # Formulate GBS File Name
 
     dnaPlateString=''.join(plateList)
-
-    gbsFileName=os.path.join(seqFilePath,'') + gbsId+'x'+gbsName+dnaPlateString+'_'+flowCell+'_'+'s'+'_'+ str(lane) + '_fastq.txt.gz'
+    if paired:
+        gbsFileName=os.path.join(seqFilePath,'') + gbsId+'R'+pEnd+'x'+gbsName+dnaPlateString+'_'+flowCell+'_'+'s'+'_'+ str(lane) + '_fastq.txt.gz'
+    else:
+        gbsFileName = os.path.join(seqFilePath, '') + gbsId +'x' + gbsName + dnaPlateString + '_' + flowCell + '_' + 's' + '_' + str(lane) + '_fastq.txt.gz'
     print('New File Name for ' + gbsNumber + ': '+ gbsFileName)
 
     if seqCenter=='KSU':
@@ -196,7 +224,7 @@ for gbs in gbsList:
             for fname in fileList:
                 with open(fname,'rb') as infile:
                     shutil.copyfileobj(infile,outfile)
-    elif seqCenter=='Quebec' or seqCenter=='HA':
+    elif seqCenter=='Quebec' or seqCenter=='HA' or seqCenter=='novogene':
         with open(gbsFileName, 'wb') as outfile:
             fname=gbsFileList[index]
             with open(fname, 'rb') as infile:
