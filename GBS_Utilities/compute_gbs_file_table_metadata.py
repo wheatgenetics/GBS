@@ -139,6 +139,9 @@ try:
                 newGbsId = gbsId + filterLetter + plateLetter
                 if newGbsId != currentGbsNumber:
                     cursorB.execute(gbsIdUpdate, (newGbsId, gbsNumber + plateLetter))
+
+            commit_and_close_db_connection(cursorA, cnxA)
+            commit_and_close_db_connection(cursorB, cnxB)
 except Exception as e:
     print('Unexpected error during database transaction on gbs table:' + str(e))
     print('Exiting...')
@@ -199,8 +202,6 @@ except Exception as e:
     sys.exit()
     print('Closing connection to database table: gbs_file.')
 
-commit_and_close_db_connection(cursorA, cnxA)
-commit_and_close_db_connection(cursorB, cnxB)
 commit_and_close_db_connection(cursorD, cnxD)
 
 # Verify that the gbs table has been updated correctly by returning the updated gbs_id,md5sum and num_lines columns
