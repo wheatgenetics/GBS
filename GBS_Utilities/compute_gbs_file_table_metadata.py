@@ -85,20 +85,49 @@ def commit_and_close_db_connection(cursor,cnx):
             print('Error Code: ' + e)
     return
 #------------------------------------------------------------------------
-def get_gbs_database_values(gbsNumber):
-    gbsCheckQuery = ("Select gbs_number,num_lines,md5sum, FROM gbs_files WHERE gbs_number LIKE %s")
+def check_gbs_file_values(gbsFileNumber):
+    gbsCheckQuery = ("Select gbs_file_id,num_lines,md5sum FROM gbs_file WHERE gbs_file_id LIKE %s")
     cursorC, cnxC = open_db_connection(local_config)
-    cursorC.execute(gbsCheckQuery, (gbsNumber + '%',))
+    cursorC.execute(gbsCheckQuery, (gbsFileNumber + '%',))
     gbsID=[]
     numLines=[]
     md5=[]
+
     for row in cursorC:
-        print("GBS ID:", row[0],"Line Count:", row[1]," MD%:", row[2])
+        print("GBS ID:", row[0],"Line Count:", row[1]," MD5:", row[2])
         gbsID.append(row[0])
-        md5.append(row[3])
+        md5.append(row[2])
     commit_and_close_db_connection(cursorC, cnxC)
     print()
     return(gbsID,numLines,md5)
+
+#------------------------------------------------------------------------
+def update_filtered_gbs_id(gbsNumber):
+
+    # This function will append an 'F' to each gbs_id in gbs table associated with a filtered GBS sequence file.
+
+    cursorA, cnxA = open_db_connection(local_config)  # Cursor for reading gbs table
+    cursorB, cnxB = open_db_connection(local_config)  # Cursor for writing gbs table
+
+    gbsIdQuery = ("Select gbs_id FROM gbs WHERE gbs_id LIKE %s ")
+    gbsIdUpdate = ("UPDATE gbs SET gbs_id=%s WHERE gbs_id = %s")
+
+    cursorA.execute(gbsIdQuery, (gbsNumber + '%',))
+
+    if rowcount !=0:
+        for row in cursorA:
+            gbsId = row[0][0:7]
+            currentGbsNumber = row[0]
+            plateLetter = row[0][-1]
+            filterLetter = 'F'
+            newGbsId = gbsId + filterLetter + plateLetter
+            if newGbsId != currentGbsNumber:
+                cursorB.execute(gbsIdUpdate, (newGbsId, gbsNumber + plateLetter))
+
+    commit_and_close_db_connection(cursorA, cnxA)
+    commit_and_close_db_connection(cursorB, cnxB)
+
+    return
 
 #------------------------------------------------------------------------
 # construct the argument parse and parse the arguments
@@ -121,27 +150,10 @@ try:
     gbsNumber=gbsFileName.split('x')[0][0:7]
     suffix=gbsFileName.split('x')[0][7:]
     if suffix=='F':
-        # Update the gbs table with filtered gbs_id
         filteredFile is True
-        if filteredFile:
-            cursorA, cnxA = open_db_connection(local_config)  # Cursor for reading gbs table
-            cursorB, cnxB = open_db_connection(local_config)  # Cursor for writing gbs table
-
-            gbsIdQuery = ("Select gbs_id FROM gbs WHERE gbs_id LIKE %s ")
-            gbsIdUpdate = ("UPDATE gbs SET gbs_id=%s WHERE gbs_id = %s")
-
-            cursorA.execute(gbsIdQuery, (gbsNumber + '%',))
-            for row in cursorA:
-                gbsId = row[0][0:7]
-                currentGbsNumber = row[0]
-                plateLetter = row[0][-1]
-                filterLetter = 'F'
-                newGbsId = gbsId + filterLetter + plateLetter
-                if newGbsId != currentGbsNumber:
-                    cursorB.execute(gbsIdUpdate, (newGbsId, gbsNumber + plateLetter))
-
-            commit_and_close_db_connection(cursorA, cnxA)
-            commit_and_close_db_connection(cursorB, cnxB)
+    # Update the gbs table with filtered gbs_id
+    if filteredFile:
+        update_filtered_gbs_id(gbsNumber)
 except Exception as e:
     print('Unexpected error during database transaction on gbs table:' + str(e))
     print('Exiting...')
@@ -164,10 +176,8 @@ with gzip.open(gbsFilePath, 'rb') as f:
 print ("Number of lines in gzip file : " + gbsFilePath + " = " + str(linecount))
 print()
 
-
-
-gbsMd5Update = ("UPDATE gbs_files SET md5sum=%s WHERE gbs_id LIKE %s")
-gbsLineCountUpdate = ("UPDATE gbs_files SET num_lines=%s WHERE gbs_id LIKE %s and (num_lines is NULL or num_lines=0)"
+gbsMd5Update = ("UPDATE gbs_file SET md5sum=%s WHERE gbs_file_id LIKE %s")
+gbsLineCountUpdate = ("UPDATE gbs_file SET num_lines=%s WHERE gbs_file_id LIKE %s and (num_lines is NULL or num_lines=0)")
 
 cursorD, cnxD = open_db_connection(local_config) # Cursor for writing gbs_files table
 
@@ -181,20 +191,20 @@ try:
 
 # Check gbs record values before attempting updates
     print ("gbs_file table values BEFORE update for", gbsNumber,":")
-    currentGBS,currentNumLines,currentMD5=get_gbs_database_values(gbsNumber)
+    currentGBS,currentNumLines,currentMD5=check_gbs_file_values(gbsFileNumber)
 
 # Check for valid MD5 value in database that does not match computed MD5 value for the file
 # If found exit, so that problem can be checked.
     for currentDBMD5 in currentMD5:
         if md5checksum != currentDBMD5 and currentDBMD5!= None:
-            print("At least one MD5 checksum column is already populated but does not match computed MD5 value.")
+            print("MD5 checksum column is already populated but does not match computed MD5 value.")
             print("Current MD5 Value :",currentDBMD5)
             print("Computed MD5 Value:",md5checksum)
             print("Exiting...")
             sys.exit()
 
-    cursorD.execute(gbsMd5Update, (md5checksum, gbsNumber + '%'))
-    cursorD.execute(gbsLineCountUpdate, (linecount, gbsNumber + '%'))
+        cursorD.execute(gbsMd5Update, (md5checksum, gbsFileNumber + '%'))
+        cursorD.execute(gbsLineCountUpdate, (linecount, gbsFileNumber + '%'))
 
 except Exception as e:
     print('Unexpected error during database transaction on gbs_file table:' + str(e))
@@ -205,8 +215,8 @@ except Exception as e:
 commit_and_close_db_connection(cursorD, cnxD)
 
 # Verify that the gbs table has been updated correctly by returning the updated gbs_id,md5sum and num_lines columns
-print ("GBS table values AFTER update for", gbsNumber,":")
-get_gbs_database_values(gbsNumber)
+print ("GBS table values AFTER update for", gbsFileNumber,":")
+check_gbs_file_values(gbsFileNumber)
 
 
 sys.exit()
