@@ -159,9 +159,13 @@ try:
                                 dnaQuant_sample_id = sample_id
                                 report_list.append([gbs_id,gbs_plexing,dna_sample_id,plate_id,plate_name,well_A01,sample_name,dna_tissue_id,dnaQuant_sample_id,quant_val,flor_val])
                         else:
-                            report_list.append([gbs_id,gbs_plexing,dna_sample_id,plate_id,plate_name,well_A01,sample_name,dna_tissue_id,'Null','Null','Null'])
+                            #report_list.append([gbs_id,gbs_plexing,dna_sample_id,plate_id,plate_name,well_A01,sample_name,dna_tissue_id,'Null','Null','Null'])
+                            print("Ignoring record with NULL quant_value for GBS ID:" + gbs_id + " Sample_ID: " + dna_sample_id)
+                            print()
                 else:
-                    report_list.append([gbs_id,gbs_plexing,'Null','Null','Null','Null','Null','Null','Null','Null','Null'])
+                    #report_list.append([gbs_id,gbs_plexing,'Null','Null','Null','Null','Null','Null','Null','Null','Null'])
+                    print("Ignoring missing DNA quantification record for GBS ID: ", + gbs_id)
+                    print()
         else:
             message = ["*** Warning: No data found for", gbs_id_input[0:7]]
             print('')
