@@ -84,7 +84,7 @@ cmdline = argparse.ArgumentParser()
 
 cmdline.add_argument('-p', '--path', help='Path to sequence files from sequencing center')
 cmdline.add_argument('-s', '--seqtype', help='The sequencing center that generated the sequence files '
-                                             '(Novogene, KSU, Quebec or HA)', default = 'N')
+                                             '(novogene, KSU, Quebec or HA)', default = 'N')
 
 args = cmdline.parse_args()
 
@@ -134,7 +134,7 @@ elif seqCenter=='HA':
             gbsLane=int(firstRead.id.split(':')[3])
             gbsList.append([gbsNumber,gbsFlowcell,gbsLane])
             gbsFileList.append(gbsFile)
-elif seqCenter=='Novogene':
+elif seqCenter=='novogene':
     gbsList = []
     gbsFileList=[]
     for file in os.listdir(seqFilePath):
@@ -225,7 +225,7 @@ for gbs in gbsList:
             for fname in fileList:
                 with open(fname,'rb') as infile:
                     shutil.copyfileobj(infile,outfile)
-    elif seqCenter=='Quebec' or seqCenter=='HA' or seqCenter=='Novogene':
+    elif seqCenter=='Quebec' or seqCenter=='HA' or seqCenter=='novogene':
         with open(gbsFileName, 'wb') as outfile:
             fname=gbsFileList[index]
             with open(fname, 'rb') as infile:
