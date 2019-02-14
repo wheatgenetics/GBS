@@ -232,8 +232,8 @@ for seqrecord in SeqIO.parse(handle, "fastq"):
                 elif enzyme=='APEKI':
                     barcodeApeki1 = Seq((barcode + apekRestrSite1),generic_dna)
                     barcodeApeki2 = Seq((barcode + apekRestrSite2),generic_dna)
-                    revbarcodeApeki1=barcodeApeki1.reverse()
-                    revbarcodeApeki2=barcodeApeki2.reverse()
+                    revbarcodeApeki1=barcodeApeki1[::-1]
+                    revbarcodeApeki2=barcodeApeki2[::-1]
                     R2 = seqrecord.seq
                     print(barcodeApeki1)
                     print(barcodeApeki2)
@@ -241,7 +241,7 @@ for seqrecord in SeqIO.parse(handle, "fastq"):
                     print(revbarcodeApeki1)
                     print(revbarcodeApeki2)
                     print()
-                    if (R2.endswith(barcodeApeki1) or R2.endswith(barcodeApeki2)):
+                    if (R2.startswith(revbarcodeApeki1) or R2.startswith(revbarcodeApeki2)):
                         print()
                         print(seqrecordcount,skipcount)
                         print(revbarcodeApeki1)
