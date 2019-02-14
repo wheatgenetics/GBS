@@ -75,7 +75,7 @@ numlines - The number of lines in the GBS sequence file.
 
 
 
-##compute_gbs_file_metadata.py
+## compute_gbs_file_metadata.py
 
 This program will calculate the MD5 checksum and number of lines of a GBS fastq.txt.gz. and update the wheatgenetics
 gbs database table with this information.
