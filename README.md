@@ -55,8 +55,27 @@ Input file name
  
 Filtered output file containing reads of length greater than or equal to the specified minimum read length.
 
+## compute_gbs_file_table_metadata.py
 
-## compute_gbs_file_metadata.py
+This program will create an entry in the gbs_file table for the GBS file specified in the input path,
+calculate the MD5 checksum and number of lines of the file and update the wheatgenetics gbs_file database table
+with the MD5 checksum and number of lines for each file.
+
+INPUTS:
+
+ -p, --path, Path to GBS sequence file
+
+OUTPUTS:
+
+The following wheatgenetics gbs_file database column values will be updated
+
+gbs_number - The GBS number e.g. GBS1320.
+md5sum - The MD5 checksum of the GBS sequence file.
+numlines - The number of lines in the GBS sequence file.
+
+
+
+##compute_gbs_file_metadata.py
 
 This program will calculate the MD5 checksum and number of lines of a GBS fastq.txt.gz. and update the wheatgenetics
 gbs database table with this information.
