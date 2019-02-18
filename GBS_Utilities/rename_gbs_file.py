@@ -84,7 +84,7 @@ cmdline = argparse.ArgumentParser()
 
 cmdline.add_argument('-p', '--path', help='Path to sequence files from sequencing center')
 cmdline.add_argument('-s', '--seqtype', help='The sequencing center that generated the sequence files '
-                                             '(novogene, KSU, Quebec or HA)', default = 'N')
+                                             '(novogene, KSU, Quebec or HA)', default = 'novogene')
 
 args = cmdline.parse_args()
 

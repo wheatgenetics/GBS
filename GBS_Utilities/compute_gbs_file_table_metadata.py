@@ -203,8 +203,9 @@ try:
             print("Exiting...")
             sys.exit()
 
-        cursorD.execute(gbsMd5Update, (md5checksum, gbsFileNumber + '%'))
-        cursorD.execute(gbsLineCountUpdate, (linecount, gbsFileNumber + '%'))
+    cursorD.execute(gbsMd5Update, (md5checksum, gbsFileNumber + '%'))
+    cursorD.execute(gbsLineCountUpdate, (linecount, gbsFileNumber + '%'))
+    cnxD.commit()
 
 except Exception as e:
     print('Unexpected error during database transaction on gbs_file table:' + str(e))
