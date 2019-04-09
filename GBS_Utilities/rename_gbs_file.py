@@ -206,10 +206,16 @@ for gbs in gbsList:
     # Formulate GBS File Name
 
     dnaPlateString=''.join(plateList)
+    print('dnaPlateString:',dnaPlateString)
+    print('seqFilePath:',seqFilePath)
+    print('gbsId:',gbsId)
+    print('gbsName:',gbsName)
+    print('flowCell:',gbsFlowcell)
+    print('lane:',str(gbsLane))
     if paired:
-        gbsFileName=os.path.join(seqFilePath,'') + gbsId+'R'+pEnd+'x'+gbsName+dnaPlateString+'_'+flowCell+'_'+'s'+'_'+ str(lane) + '_fastq.txt.gz'
+        gbsFileName=os.path.join(seqFilePath,'') + gbsId+'R'+pEnd+'x'+gbsName+dnaPlateString+'_'+ gbsFlowcell +'_'+'s'+'_'+ str(gbsLane) + '_fastq.txt.gz'
     else:
-        gbsFileName = os.path.join(seqFilePath, '') + gbsId +'x' + gbsName + dnaPlateString + '_' + flowCell + '_' + 's' + '_' + str(lane) + '_fastq.txt.gz'
+        gbsFileName = os.path.join(seqFilePath, '') + gbsId +'x' + gbsName + dnaPlateString + '_' + gbsFlowcell + '_' + 's' + '_' + str(gbsLane) + '_fastq.txt.gz'
     print('New File Name for ' + gbsNumber + ': '+ gbsFileName)
 
     if seqCenter=='KSU':
