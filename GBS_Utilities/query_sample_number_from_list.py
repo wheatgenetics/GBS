@@ -67,9 +67,7 @@ with open(sampleFile, 'r') as f:
     next(reader)  # Skip header row
     sampleList= list(reader)
 
-
-
-sampleQuery=("SELECT sample_name,sample_id,tissue_id from dna WHERE (sample_name=%s or tissue_id=%s)")
+sampleQuery=("SELECT sample_id,plate_name,sample_name,tissue_id from dna WHERE (sample_name=%s or tissue_id=%s)")
 
 cursor, cnx = open_db_connection(config)
 
@@ -84,19 +82,17 @@ for s in sampleList:
     cursor.execute(sampleQuery,(sample,sample))
     if cursor.rowcount != 0:
         for row in cursor:
-            reportItem=[row[0],row[1],row[2]]
+            reportItem=[str(s[0]),row[0],row[1],row[2],row[3]]
             reportList.append(reportItem)
     else:
-        reportItem=[str(s[0]),"Not Found in Database",""]
+        reportItem=[str(s[0]),"Not Found in Database","",""]
         reportList.append(reportItem)
-
-
 
 commit_and_close_db_connection(cursor, cnx)
 
 with open(reportFile,'w') as outcsv:
     writer = csv.writer(outcsv)
-    writer.writerow(["sample_name","sample_id","tissue_id"])
+    writer.writerow(["query_key","sample_id","plate_name","sample_name","tissue_id"])
     for item in reportList:
         writer.writerow(item)
 sys.exit()
