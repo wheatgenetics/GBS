@@ -1,6 +1,6 @@
 GBS
 ===
-The programs in the GBS_Utilities folder are used for GBS Sequence Data Management.
+These programs are used for GBS Sequence Data Management.
 
 GBS Sequence Data Management consists of the following tasks:
 
@@ -22,13 +22,13 @@ This program will rename raw .fastq files received from a sequencing center to a
 Currently, this program supports GBS files produced by the KSU Genomics Facility, Genome Quebec and Hudson Alpha.
 Support for other sequencing centers but will be added as required.
 
- **INPUT Parameters:**
+**INPUTS:**
  
 -p, --path, Path to sequence files from sequencing center
  
 -s, --seqtype, The sequencing center that generated the sequence files (novogene ,KSU, Quebec or HA), default = novogene
 
- **OUTPUTS:**
+**OUTPUTS:**
 
 Copy of the original file with a TASSEL-compliant GBS file name.
  
@@ -46,12 +46,12 @@ a specified minimum length.
 
 It was written in PERL because it can read/write .gz files directly without separate decompress/compress steps.
 
-**INPUT parameters:**
+**INPUTS:**
 
 Minimum read length e.g. 75
 Input file name 
 
- **OUTPUT:**
+**OUTPUT:**
  
 Filtered output file containing reads of length greater than or equal to the specified minimum read length.
 
@@ -61,11 +61,11 @@ This program will create an entry in the gbs_file table for the GBS file specifi
 calculate the MD5 checksum and number of lines of the file and update the wheatgenetics gbs_file database table
 with the MD5 checksum and number of lines for each file.
 
-INPUTS:
+**INPUTS:**
 
  -p, --path, Path to GBS sequence file
 
-OUTPUTS:
+**OUTPUTS:**
 
 The following wheatgenetics gbs_file database column values will be updated
 
@@ -79,11 +79,11 @@ numlines - The number of lines in the GBS sequence file.
 This program will calculate the MD5 checksum and number of lines of a GBS fastq.txt.gz. and update the wheatgenetics
 gbs database table with this information.
 
-INPUTS:
+**INPUTS:**
 
 -p, --path, Path to GBS sequence file
 
-OUTPUTS:
+**OUTPUTS:**
 
 The following wheatgenetics database column values will be updated
 
@@ -95,13 +95,13 @@ numlines - The number of lines in the GBS sequence file.
 
 This program will generate a distribution of barcode counts contained in a GBS sequence file
 
-INPUTS:   
+**INPUTS:**
 
 -i, --input, full path to GBS file to process
 -n, --numreads, number of fastq reads to process, type=int, default=100000
 -s, --skip, number of fastq reads to skip from beginning of file, type=int, default=1000000
 
-OUTPUTS:  
+**OUTPUTS:**  
   
 A report with counts of barcodes found in GBS sequence files.
 A report with counts of barcodes associated with each well in a GBS library
@@ -110,13 +110,13 @@ A report with counts of barcodes associated with each well in a GBS library
 
 This program will generate a report of the quantity of DNA measured for all wells on plates associated with one or more GBS libraries identified by GBS ID. The GBS ID string has the format e.g. GBS0001, GBS0001R1, GBS0001L1, GBS0001PE.
 
-INPUTS:   
+**INPUTS:**
 
 -g,--gbs,comma separated list of GBS IDs,default=''
 
 NOTE: a blank input string will generate report for all GBS libraries in the wheatgenetics database.
 
-OUTPUTS:  
+**OUTPUTS:**
 
 A csv report file listing quant_val and flor_val measurements for all wells in DNA plates associated with the GBS libraries in the input string.
 
