@@ -16,8 +16,8 @@
 # Copy of the original file with a TASSEL-compliant GBS file name.
 #
 #
-#import sys
-#import os
+import sys
+import os
 import argparse
 #import errno
 #import shlex, subprocess, shutil
@@ -31,17 +31,20 @@ import argparse
 cmdline = argparse.ArgumentParser()
 
 cmdline.add_argument('-p', '--path', help='Path to sequence files from sequencing center')
-cmdline.add_argument('-s', '--seqtype', help='The sequencing center that generated the sequence files '
-                                             '(novogene, KSU, Quebec or HA)', default = 'novogene')
+cmdline.add_argument('-s', '--seqtype', help='The sequencing center that generated the sequence files (novogene, KSU, Quebec or HA)', default = 'novogene')
 
 args = cmdline.parse_args()
 
-#seqFilePath=args.path
-#seqCenter=args.seqtype
+if args.path is None:
+    print("You must enter a path to sequence files using -p.")
+    sys.exit()
 
-#if not os.path.exists(seqFilePath):
-#    print("Path to folder: " + seqFilePath + " not found. Exiting...")
-#    sys.exit()
+seqFilePath=args.path
+seqCenter=args.seqtype
+
+if not os.path.exists(seqFilePath):
+    print("Path to folder: " + seqFilePath + " not found. Exiting...")
+    sys.exit()
 
 #------------------------------------------------------------------------
 
