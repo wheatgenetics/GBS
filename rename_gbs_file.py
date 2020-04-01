@@ -58,69 +58,69 @@ paired = False
 
 if seqCenter == 'KSU':
     gbsProject = os.path.basename(os.path.normpath(seqFilePath)) # Get the KSU project name e.g. 1369_HGJ27BGX7
-    gbsNumber='GBS'+ gbsProject.split('_')[0]
-    gbsFlowcell=gbsProject.split('_')[1]
-    gbsLane=0
+    gbsNumber = 'GBS'+ gbsProject.split('_')[0]
+    gbsFlowcell = gbsProject.split('_')[1]
+    gbsLane = 0
     gbsList.append([gbsNumber,gbsFlowcell,gbsLane])
-elif seqCenter=='Quebec':
+elif seqCenter == 'Quebec':
     gbsList = []
-    gbsFileList=[]
+    gbsFileList = []
     for file in os.listdir(seqFilePath):
         if (file.startswith('HI.') and file.endswith(".gz")):
-            gbsPart=file.split('.')[3]
-            gbsNumber=gbsPart.split('_')[0]
-            gbsFile=os.path.join(seqFilePath,file)
+            gbsPart = file.split('.')[3]
+            gbsNumber = gbsPart.split('_')[0]
+            gbsFile = os.path.join(seqFilePath,file)
             with gzip.open(gbsFile,'rt') as handle:
                 firstRead = next(SeqIO.parse(handle, "fastq"))
-            gbsFlowcell=firstRead.id.split(':')[2]
-            gbsLane=int(firstRead.id.split(':')[3])
+            gbsFlowcell = firstRead.id.split(':')[2]
+            gbsLane = int(firstRead.id.split(':')[3])
             gbsList.append([gbsNumber,gbsFlowcell,gbsLane])
             gbsFileList.append(gbsFile)
     gbsList.sort()
     gbsFileList.sort()
-elif seqCenter=='HA':
+elif seqCenter == 'HA':
     gbsList = []
-    gbsFileList=[]
+    gbsFileList = []
     for file in os.listdir(seqFilePath):
         if file.endswith(".gz"):
-            gbsNumber=file.split('_')[2]
-            gbsFile=os.path.join(seqFilePath,file)
+            gbsNumber = file.split('_')[2]
+            gbsFile = os.path.join(seqFilePath,file)
             with gzip.open(gbsFile,'rt') as handle:
                 firstRead = next(SeqIO.parse(handle, "fastq"))
-            gbsFlowcell=firstRead.id.split(':')[2]
-            gbsLane=int(firstRead.id.split(':')[3])
+            gbsFlowcell = firstRead.id.split(':')[2]
+            gbsLane = int(firstRead.id.split(':')[3])
             gbsList.append([gbsNumber,gbsFlowcell,gbsLane])
             gbsFileList.append(gbsFile)
-elif seqCenter=='novogene':
+elif seqCenter == 'novogene':
     gbsList = []
-    gbsFileList=[]
+    gbsFileList = []
     for file in os.listdir(seqFilePath):
         if file.endswith(".gz"):
-            paired=True
-            params=gbsNumber=file.split('_')
+            paired = True
+            params = gbsNumber = file.split('_')
             pEnd = params[4][0]
-            gbsNumber=params[0]
-            gbsFile=os.path.join(seqFilePath,file)
+            gbsNumber = params[0]
+            gbsFile = os.path.join(seqFilePath,file)
             with gzip.open(gbsFile,'rt') as handle:
                 firstRead = next(SeqIO.parse(handle, "fastq"))
-            gbsFlowcell=firstRead.id.split(':')[2]
-            gbsLane=int(firstRead.id.split(':')[3])
+            gbsFlowcell = firstRead.id.split(':')[2]
+            gbsLane = int(firstRead.id.split(':')[3])
             gbsList.append([gbsNumber,gbsFlowcell,gbsLane,pEnd])
             gbsFileList.append(gbsFile)
 else:
     print('Invalid sequencing center selected:', seqCenter)
-    print('Please specify a sequencing center from the following list: [KSU,Quebec,HA] and try again.')
+    print('Please specify a sequencing center from the following list: [KSU, Quebec, HA, novogene, psomagen] and try again.')
     print('Exiting...')
     sys.exit()
 
-index=0
+index = 0
 for gbs in gbsList:
 
-    gbsNumber=gbs[0]
-    gbsFlowcell=gbs[1]
-    gbsLane=gbs[2]
+    gbsNumber = gbs[0]
+    gbsFlowcell = gbs[1]
+    gbsLane = gbs[2]
     if paired:
-        pEnd=gbs[3]
+        pEnd = gbs[3]
 
     # Formulate GBS File Name
 
