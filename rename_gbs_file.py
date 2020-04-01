@@ -127,11 +127,11 @@ for gbs in gbsList:
     # Formulate GBS File Name
 
     dnaPlateString = ''.join(plateList)
-    print('dnaPlateString: ',dnaPlateString)
-    print('seqFilePath: ',seqFilePath)
-    print('gbsId: ',gbsId)
-    print('gbsName: ',gbsName)
-    print('flowCell: ',gbsFlowcell)
+    print('dnaPlateString: ', dnaPlateString)
+    print('seqFilePath: ', seqFilePath)
+    print('gbsId: ', gbsId)
+    print('gbsName: ', gbsName)
+    print('flowCell: ', gbsFlowcell)
     print('lane: ',str(gbsLane))
     if paired:
         gbsFileName = os.path.join(seqFilePath,'') + gbsId + 'R' + pEnd + 'x' + gbsName+dnaPlateString + '_' + gbsFlowcell + '_' + 's' + '_' + str(gbsLane) + '_fastq.txt.gz'
@@ -139,8 +139,8 @@ for gbs in gbsList:
         gbsFileName = os.path.join(seqFilePath, '') + gbsId +'x' + gbsName + dnaPlateString + '_' + gbsFlowcell + '_' + 's' + '_' + str(gbsLane) + '_fastq.txt.gz'
     print('New File Name for ' + gbsNumber + ': '+ gbsFileName)
 
-    if seqCenter=='KSU':
-        fileList=[]
+    if seqCenter == 'KSU':
+        fileList = []
         for file in os.listdir(seqFilePath):
             if (file.startswith(gbsProject.split('_')[0]) and file.endswith(".gz")):
                 fileList.append(os.path.join(seqFilePath, file))
@@ -150,15 +150,15 @@ for gbs in gbsList:
 
         with open(gbsFileName, 'wb') as outfile:
             for fname in fileList:
-                with open(fname,'rb') as infile:
-                    shutil.copyfileobj(infile,outfile)
-    elif seqCenter=='Quebec' or seqCenter=='HA' or seqCenter=='novogene':
+                with open(fname, 'rb') as infile:
+                    shutil.copyfileobj(infile, outfile)
+    elif seqCenter == 'Quebec' or seqCenter == 'HA' or seqCenter == 'novogene' or seqCenter == 'psomagen':
         with open(gbsFileName, 'wb') as outfile:
-            fname=gbsFileList[index]
+            fname = gbsFileList[index]
             with open(fname, 'rb') as infile:
                 shutil.copyfileobj(infile, outfile)
-    index+=1
+    index += 1
     print()
 
 sys.exit()
-
+ 
