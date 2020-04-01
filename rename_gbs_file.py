@@ -107,6 +107,8 @@ elif seqCenter == 'novogene':
             gbsLane = int(firstRead.id.split(':')[3])
             gbsList.append([gbsNumber,gbsFlowcell,gbsLane,pEnd])
             gbsFileList.append(gbsFile)
+elif seqCenter == 'psomagen':
+    print('psomagen')
 else:
     print('Invalid sequencing center selected:', seqCenter)
     print('Please specify a sequencing center from the following list: [KSU, Quebec, HA, novogene, psomagen] and try again.')
@@ -124,15 +126,15 @@ for gbs in gbsList:
 
     # Formulate GBS File Name
 
-    dnaPlateString=''.join(plateList)
-    print('dnaPlateString:',dnaPlateString)
-    print('seqFilePath:',seqFilePath)
-    print('gbsId:',gbsId)
-    print('gbsName:',gbsName)
-    print('flowCell:',gbsFlowcell)
-    print('lane:',str(gbsLane))
+    dnaPlateString = ''.join(plateList)
+    print('dnaPlateString: ',dnaPlateString)
+    print('seqFilePath: ',seqFilePath)
+    print('gbsId: ',gbsId)
+    print('gbsName: ',gbsName)
+    print('flowCell: ',gbsFlowcell)
+    print('lane: ',str(gbsLane))
     if paired:
-        gbsFileName=os.path.join(seqFilePath,'') + gbsId+'R'+pEnd+'x'+gbsName+dnaPlateString+'_'+ gbsFlowcell +'_'+'s'+'_'+ str(gbsLane) + '_fastq.txt.gz'
+        gbsFileName = os.path.join(seqFilePath,'') + gbsId + 'R' + pEnd + 'x' + gbsName+dnaPlateString + '_' + gbsFlowcell + '_' + 's' + '_' + str(gbsLane) + '_fastq.txt.gz'
     else:
         gbsFileName = os.path.join(seqFilePath, '') + gbsId +'x' + gbsName + dnaPlateString + '_' + gbsFlowcell + '_' + 's' + '_' + str(gbsLane) + '_fastq.txt.gz'
     print('New File Name for ' + gbsNumber + ': '+ gbsFileName)
