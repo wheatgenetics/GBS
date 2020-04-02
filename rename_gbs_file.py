@@ -63,7 +63,6 @@ if seqCenter == 'KSU':
     gbsLane = 0
     gbsList.append([gbsNumber,gbsFlowcell,gbsLane])
 elif seqCenter == 'Quebec':
-    gbsList = []
     gbsFileList = []
     
     for file in os.listdir(seqFilePath):
@@ -80,7 +79,6 @@ elif seqCenter == 'Quebec':
     gbsList.sort()
     gbsFileList.sort()
 elif seqCenter == 'HA':
-    gbsList = []
     gbsFileList = []
 
     for file in os.listdir(seqFilePath):
@@ -94,7 +92,6 @@ elif seqCenter == 'HA':
             gbsList.append([gbsNumber,gbsFlowcell,gbsLane])
             gbsFileList.append(gbsFile)
 elif seqCenter == 'novogene':
-    gbsList = []
     gbsFileList = []
 
     for file in os.listdir(seqFilePath):
@@ -111,7 +108,6 @@ elif seqCenter == 'novogene':
             gbsList.append([gbsNumber,gbsFlowcell,gbsLane,pEnd])
             gbsFileList.append(gbsFile)
 elif seqCenter == 'psomagen':
-    gbsList = []
     gbsFileList = []
 
     for file in os.listdir(seqFilePath):
