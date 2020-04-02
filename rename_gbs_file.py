@@ -2,7 +2,7 @@
 #
 # Program: 	rename_gbs_file
 #
-# This program will rename raw .fastq files received from a sequencing center to a TASSEL-compliant GBS file name.
+# This program will rename raw .fastq files received from a sequencing center to a TASSEL-compliant GBS file name of the format, code_flowcell_s_lane_fastq.txt.gz.
 # Currently, this program supports GBS files produced by the KSU Genomics Facility, Genome Quebec and Hudson Alpha.
 # Support for other sequencing centers but will be added as required.
 #
@@ -13,7 +13,7 @@
 #
 # OUTPUTS:
 #
-# Copy of the original file with a TASSEL-compliant GBS file name.
+# Copy of the original file with a TASSEL-compliant GBS file name of the format, code_flowcell_s_lane_fastq.txt.gz.
 #
 #
 import sys
