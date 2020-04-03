@@ -161,7 +161,7 @@ elif seqCenter == 'psomagen':
     gbsFileList = []
 
     for file in os.listdir(seqFilePath):
-        if file.endswith(".gz"):
+        if file.endswith("_R1.fastq.gz"): # Only get the R1 file for renaming. We leave the R2 file alone.
             print()
             paired = True
             params = gbsNumber = file.split('_') 
