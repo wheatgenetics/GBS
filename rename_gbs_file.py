@@ -15,8 +15,17 @@
 #
 # Copy of the original file with a TASSEL-compliant GBS file name of the format, code_flowcell_s_lane_fastq.txt.gz.
 #
+# The following wheatgenetics database column values will be updated
 #
+# flowcell - The flowcell that the associated GBS library was sequenced on.
+# lane - The lane that the associated GBS library was sequenced on.
+#
+#
+import mysql.connector # For successful installation, need to run pip3 install -U setuptools,pip install -U wheel
+# and then pip3 install mysql-connector-python-rf
+from mysql.connector import errorcode
 import sys
+import local_config
 import os
 import argparse
 #import errno
@@ -24,6 +33,45 @@ import argparse
 from Bio import SeqIO
 import gzip
 
+#------------------------------------------------------------------------
+def open_db_connection(test_config):
+
+    # Connect to the HTP database
+        try:
+            cnx = mysql.connector.connect(user=test_config.USER, password=test_config.PASSWORD,
+                                          host=test_config.HOST, port=test_config.PORT,
+                                          database=test_config.DATABASE)
+
+            print('Connecting to Database: ' + cnx.database)
+
+        except mysql.connector.Error as err:
+            if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+                print('Something is wrong with your user name or password')
+                sys.exit()
+            elif err.errno == errorcode.ER_BAD_DB_ERROR:
+                print('Database does not exist')
+                sys.exit()
+            else:
+                print(err)
+        else:
+            print('Connected to MySQL database:' + cnx.database)
+            cursor = cnx.cursor(buffered=True)
+        return cursor,cnx
+
+#------------------------------------------------------------------------
+def commit_and_close_db_connection(cursor,cnx):
+
+    # Commit changes and close cursor and connection
+
+    try:
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+
+    except Exception as e:
+            print('There was a problem committing database changes or closing a database connection.')
+            print('Error Code: ' + e)
+    return
 #------------------------------------------------------------------------
 
 # Construct the argument parse and parse the arguments
@@ -140,6 +188,44 @@ for gbs in gbsList:
     
     if paired:
         pEnd = gbs[3]
+
+    # SQL Statement to update the gbs record with flowcell and lane data.
+
+    gbsFlowcellUpdate=("UPDATE gbs SET flowcell=%s WHERE gbs_id LIKE %s and flowcell is NULL" )
+    gbsLaneUpdate=("UPDATE gbs SET lane=%s WHERE gbs_id LIKE %s and lane is NULL")
+
+    # SQL Query to retrieve the gbs_name and dna_id from the gbs records for use in the file renaming.
+
+    gbsQuery=("SELECT gbs_id,gbs_name,dna_id,flowcell,lane from gbs WHERE gbs_id LIKE %s")
+
+    # Open database connection
+
+    cursor, cnx = open_db_connection(local_config)
+    try:
+        cursor.execute(gbsQuery, (gbsNumber + '%',))
+        if cursor.rowcount != 0:
+            plateList=[]
+            for row in cursor:
+                gbsId=row[0][0:7]
+                gbsName=row[1]
+                gbsName= ''.join(e for e in gbsName if e.isalnum())
+                dnaPlates=plateList.append(row[2][9:])
+                flowCell=row[3]
+                lane=row[4]
+        else:
+            print("*** GBS ID: " + gbsNumber + " not found in database. Exiting... ***")
+            sys.exit()
+        print('Updating flowcell in gbs table for ' + gbsNumber + ': ' + gbsFlowcell)
+        cursor.execute(gbsFlowcellUpdate,(gbsFlowcell,gbsNumber+'%'))
+        print('Updating lane in gbs table for ' + gbsNumber + ': ' + str(gbsLane))
+        cursor.execute(gbsLaneUpdate, (gbsLane,gbsNumber + '%',))
+    except Exception as e:
+        print('Unexpected error during database query:'+ str(e))
+        print('Exiting...')
+        sys.exit()
+        print('Closing connection to database table: gbs.')
+
+    commit_and_close_db_connection(cursor, cnx)
 
     # Formulate GBS File Name
     dnaPlateString = ''.join(plateList)
