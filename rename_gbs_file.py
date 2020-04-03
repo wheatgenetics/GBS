@@ -28,8 +28,8 @@ import sys
 import local_config
 import os
 import argparse
-#import errno
-#import shlex, subprocess, shutil
+import errno
+import shlex, subprocess, shutil
 from Bio import SeqIO
 import gzip
 
@@ -41,7 +41,6 @@ def open_db_connection(test_config):
             cnx = mysql.connector.connect(user=test_config.USER, password=test_config.PASSWORD,
                                           host=test_config.HOST, port=test_config.PORT,
                                           database=test_config.DATABASE)
-
             print('Connecting to Database: ' + cnx.database)
 
         except mysql.connector.Error as err:
@@ -54,7 +53,7 @@ def open_db_connection(test_config):
             else:
                 print(err)
         else:
-            print('Connected to MySQL database:' + cnx.database)
+            print('Connected to MySQL database: ' + cnx.database)
             cursor = cnx.cursor(buffered=True)
         return cursor,cnx
 
@@ -162,7 +161,7 @@ elif seqCenter == 'psomagen':
         if file.endswith(".gz"):
             paired = True
             params = gbsNumber = file.split('_') 
-            pEnd = params[1][0]
+            pEnd = params[1][1]
             gbsNumber = params[0]
             gbsFile = os.path.join(seqFilePath, file)
 
@@ -190,16 +189,13 @@ for gbs in gbsList:
         pEnd = gbs[3]
 
     # SQL Statement to update the gbs record with flowcell and lane data.
-
     gbsFlowcellUpdate=("UPDATE gbs SET flowcell=%s WHERE gbs_id LIKE %s and flowcell is NULL" )
     gbsLaneUpdate=("UPDATE gbs SET lane=%s WHERE gbs_id LIKE %s and lane is NULL")
 
     # SQL Query to retrieve the gbs_name and dna_id from the gbs records for use in the file renaming.
-
     gbsQuery=("SELECT gbs_id,gbs_name,dna_id,flowcell,lane from gbs WHERE gbs_id LIKE %s")
 
     # Open database connection
-
     cursor, cnx = open_db_connection(local_config)
     try:
         cursor.execute(gbsQuery, (gbsNumber + '%',))
@@ -249,7 +245,6 @@ for gbs in gbsList:
         fileList.sort()
 
         # Concatenate separate files into one GBS File
-
         with open(gbsFileName, 'wb') as outfile:
             for fname in fileList:
                 with open(fname, 'rb') as infile:
