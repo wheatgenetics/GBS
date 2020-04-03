@@ -159,6 +159,7 @@ elif seqCenter == 'psomagen':
 
     for file in os.listdir(seqFilePath):
         if file.endswith(".gz"):
+            print()
             paired = True
             params = gbsNumber = file.split('_') 
             pEnd = params[1][1]
@@ -178,6 +179,8 @@ else:
     print('Please specify a sequencing center from the following list: [KSU, Quebec, HA, novogene, psomagen] and try again.')
     print('Exiting...')
     sys.exit()
+
+print()
 
 index = 0
 for gbs in gbsList:
