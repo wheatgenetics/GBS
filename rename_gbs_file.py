@@ -21,8 +21,7 @@
 # lane - The lane that the associated GBS library was sequenced on.
 #
 #
-import mysql.connector # For successful installation, need to run pip3 install -U setuptools,pip install -U wheel
-# and then pip3 install mysql-connector-python-rf
+import mysql.connector # For successful installation, need to run pip3 install -U setuptools,pip install -U wheel and then pip3 install mysql-connector-python-rf
 from mysql.connector import errorcode
 import sys
 import local_config
@@ -37,39 +36,43 @@ import gzip
 def open_db_connection(test_config):
 
     # Connect to the HTP database
-        try:
-            cnx = mysql.connector.connect(user=test_config.USER, password=test_config.PASSWORD,
-                                          host=test_config.HOST, port=test_config.PORT,
-                                          database=test_config.DATABASE)
-            print('Connecting to Database: ' + cnx.database)
+    try:
+        cnx = mysql.connector.connect(
+            user=test_config.USER,
+            password=test_config.PASSWORD,
+            host=test_config.HOST,
+            port=test_config.PORT,
+            database=test_config.DATABASE
+        )
+        
+        print('Connecting to Database: ' + cnx.database)
 
-        except mysql.connector.Error as err:
-            if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-                print('Something is wrong with your user name or password')
-                sys.exit()
-            elif err.errno == errorcode.ER_BAD_DB_ERROR:
-                print('Database does not exist')
-                sys.exit()
-            else:
-                print(err)
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            print('Something is wrong with your user name or password')
+            sys.exit()
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            print('Database does not exist')
+            sys.exit()
         else:
-            print('Connected to MySQL database: ' + cnx.database)
-            cursor = cnx.cursor(buffered=True)
-        return cursor,cnx
+            print(err)
+    else:
+        print('Connected to MySQL database: ' + cnx.database)
+        cursor = cnx.cursor(buffered=True)
+    return cursor, cnx
 
 #------------------------------------------------------------------------
 def commit_and_close_db_connection(cursor,cnx):
 
     # Commit changes and close cursor and connection
-
     try:
         cnx.commit()
         cursor.close()
         cnx.close()
 
     except Exception as e:
-            print('There was a problem committing database changes or closing a database connection.')
-            print('Error Code: ' + e)
+        print('There was a problem committing database changes or closing a database connection.')
+        print('Error Code: ' + e)
     return
 #------------------------------------------------------------------------
 
@@ -192,11 +195,11 @@ for gbs in gbsList:
         pEnd = gbs[3]
 
     # SQL Statement to update the gbs record with flowcell and lane data.
-    gbsFlowcellUpdate=("UPDATE gbs SET flowcell=%s WHERE gbs_id LIKE %s and flowcell is NULL" )
-    gbsLaneUpdate=("UPDATE gbs SET lane=%s WHERE gbs_id LIKE %s and lane is NULL")
+    gbsFlowcellUpdate = ("UPDATE gbs SET flowcell=%s WHERE gbs_id LIKE %s and flowcell is NULL")
+    gbsLaneUpdate = ("UPDATE gbs SET lane=%s WHERE gbs_id LIKE %s and lane is NULL")
 
     # SQL Query to retrieve the gbs_name and dna_id from the gbs records for use in the file renaming.
-    gbsQuery=("SELECT gbs_id,gbs_name,dna_id,flowcell,lane from gbs WHERE gbs_id LIKE %s")
+    gbsQuery = ("SELECT gbs_id,gbs_name,dna_id,flowcell,lane from gbs WHERE gbs_id LIKE %s")
 
     # Open database connection
     cursor, cnx = open_db_connection(local_config)
@@ -205,21 +208,21 @@ for gbs in gbsList:
         if cursor.rowcount != 0:
             plateList=[]
             for row in cursor:
-                gbsId=row[0][0:7]
-                gbsName=row[1]
-                gbsName= ''.join(e for e in gbsName if e.isalnum())
-                dnaPlates=plateList.append(row[2][9:])
-                flowCell=row[3]
-                lane=row[4]
+                gbsId = row[0][0:7]
+                gbsName = row[1]
+                gbsName = ''.join(e for e in gbsName if e.isalnum())
+                dnaPlates = plateList.append(row[2][9:])
+                flowCell = row[3]
+                lane = row[4]
         else:
             print("*** GBS ID: " + gbsNumber + " not found in database. Exiting... ***")
             sys.exit()
         print('Updating flowcell in gbs table for ' + gbsNumber + ': ' + gbsFlowcell)
-        cursor.execute(gbsFlowcellUpdate,(gbsFlowcell,gbsNumber+'%'))
+        cursor.execute(gbsFlowcellUpdate, (gbsFlowcell, gbsNumber + '%'))
         print('Updating lane in gbs table for ' + gbsNumber + ': ' + str(gbsLane))
-        cursor.execute(gbsLaneUpdate, (gbsLane,gbsNumber + '%',))
+        cursor.execute(gbsLaneUpdate, (gbsLane, gbsNumber + '%',))
     except Exception as e:
-        print('Unexpected error during database query:'+ str(e))
+        print('Unexpected error during database query:' + str(e))
         print('Exiting...')
         sys.exit()
         print('Closing connection to database table: gbs.')
@@ -233,7 +236,7 @@ for gbs in gbsList:
     print('gbsId: ', gbsId)
     print('gbsName: ', gbsName)
     print('flowCell: ', gbsFlowcell)
-    print('lane: ',str(gbsLane))
+    print('lane: ', str(gbsLane))
     if paired:
         gbsFileName = os.path.join(seqFilePath,'') + gbsId + 'R' + pEnd + 'x' + gbsName+dnaPlateString + '_' + gbsFlowcell + '_' + 's' + '_' + str(gbsLane) + '_fastq.txt.gz'
     else:
