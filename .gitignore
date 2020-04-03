@@ -1,0 +1,4 @@
+__pycache__/
+dist/
+local_config.py
+.DS_Store
