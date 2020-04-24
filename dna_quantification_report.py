@@ -118,7 +118,7 @@ gbslibs=gbslist.split(',')
 print(' ')
 print("Connecting to database:", local_config.DATABASE)
 try:
-  cnx = mysql.connector.connect(user=config.USER, password=config.PASSWORD, host=config.HOST, port=config.PORT, database=config.DATABASE, buffered=True)
+  cnx = mysql.connector.connect(user=local_config.USER, password=local_config.PASSWORD, host=local_config.HOST, port=local_config.PORT, database=local_config.DATABASE, buffered=True)
 except mysql.connector.Error as err:
   if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
     print("Something is wrong with your user name or password.")
