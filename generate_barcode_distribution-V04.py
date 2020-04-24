@@ -35,7 +35,7 @@ import mysql.connector
 from Bio import SeqIO
 from mysql.connector import errorcode
 
-import config
+import local_config as config
 #import local_config
 
 getcontext().prec = 8
