@@ -28,7 +28,7 @@ import sys
 import mysql.connector
 from mysql.connector import errorcode
 
-import config
+import local_config as config
 
 blank           = "%BLANK%"
 bufsize         = 1 # Use line buffering, i.e. output every line to the file.
