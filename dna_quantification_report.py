@@ -134,7 +134,7 @@ else:
 
 # Execute the query to get dna_id and plexing fields from gbs table
 
-print("Querying database:", config.DATABASE)
+print("Querying database:", local_config.DATABASE)
 try:
     for gbs in gbslibs:
         report_list = []
