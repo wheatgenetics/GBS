@@ -34,7 +34,7 @@ import sys
 import mysql.connector
 from mysql.connector import errorcode
 
-import config
+import local_config
 
 import texttable as tt
 
@@ -116,7 +116,7 @@ gbslibs=gbslist.split(',')
 # Connect to the wheatgenetics database
 
 print(' ')
-print("Connecting to database:", config.DATABASE)
+print("Connecting to database:", local_config.DATABASE)
 try:
   cnx = mysql.connector.connect(user=config.USER, password=config.PASSWORD, host=config.HOST, port=config.PORT, database=config.DATABASE, buffered=True)
 except mysql.connector.Error as err:
