@@ -1,8 +1,8 @@
 GBS
 ===
-These programs are used for GBS Sequence Data Management.
+These programs are used for Genotyping by Sequencing (GBS) data management at the Poland Lab (https://wheatgenetics.k-state.edu/), Department of Plant Pathology, Kansas State University.
 
-GBS Sequence Data Management consists of the following tasks:
+GBS Sequence data management consists of the following tasks:
 
 1. Download of GBS sequence data files from sequencing facilities.
 2. Verify the integrity of downloaded GBS files.
@@ -119,4 +119,3 @@ NOTE: a blank input string will generate report for all GBS libraries in the whe
 **OUTPUTS:**
 
 A csv report file listing quant_val and flor_val measurements for all wells in DNA plates associated with the GBS libraries in the input string.
-
